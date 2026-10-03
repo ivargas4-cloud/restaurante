@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reserva de mesa · Buen Sabor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23ff9f1c' stroke='%23a31621' stroke-width='4'/%3E%3Ctext x='32' y='41' font-size='26' font-weight='800' text-anchor='middle' fill='%23a31621' font-family='Arial'%3EBS%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="top">
+  <nav class="nav" aria-label="Principal">
+    <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
+    <span class="brand">Buen Sabor</span>
+    <ul>
+      <li><a href="#" id="navInicio">Inicio</a></li>
+      <li><a href="#" data-soon>Menú</a></li>
+      <li><a href="#" aria-current="page">Reservas</a></li>
+      <li><a href="#" data-soon>Contacto</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="Buscar..." aria-label="Buscar">
+  </nav>
+</header>
+
+<main>
+  <button class="back" type="button" id="back">← Volver</button>
+  <h1>Reserva de Mesa</h1>
+
+  <div class="split">
+    <!-- 1. Datos de la reserva -->
+    <section class="panel" id="p1" aria-labelledby="h1s">
+      <h2 id="h1s"><span class="n">1</span>Datos de la reserva</h2>
+      <form id="form" novalidate>
+        <div class="grid2">
+          <div class="f">
+            <label for="nombre">Nombre completo <span class="req">*</span></label>
+            <input class="ctl" id="nombre" name="nombre" type="text" autocomplete="name" placeholder="Ej. María Pérez">
+            <p class="err" id="e-nombre"></p>
+          </div>
+          <div class="f">
+            <label for="celular">Celular <span class="req">*</span></label>
+            <input class="ctl" id="celular" name="celular" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="3001234567">
+            <p class="err" id="e-celular"></p>
+          </div>
+          <div class="f">
+            <label for="personas">Cantidad de personas <span class="req">*</span></label>
+            <select class="ctl" id="personas" name="personas"></select>
+            <p class="err" id="e-personas"></p>
+          </div>
+          <div class="f">
+            <label for="fecha">Fecha <span class="req">*</span></label>
+            <input class="ctl" id="fecha" name="fecha" type="date">
+            <p class="err" id="e-fecha"></p>
+          </div>
+          <div class="f">
+            <label for="hora">Hora <span class="req">*</span></label>
+            <select class="ctl" id="hora" name="hora"></select>
+            <p class="err" id="e-hora"></p>
+          </div>
+          <div class="f">
+            <label for="correo">Correo</label>
+            <input class="ctl" id="correo" name="correo" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com">
+            <p class="err" id="e-correo"></p>
+          </div>
+        </div>
+        <p class="note"><span class="req">*</span> Los campos marcados son obligatorios.</p>
+      </form>
+    </section>
+
+    <!-- 2. Disponibilidad de mesas -->
+    <section class="panel locked" id="p2" aria-labelledby="h2s" inert>
+      <h2 id="h2s"><span class="n">2</span>Disponibilidad de mesas</h2>
+      <p class="hint" id="hint"></p>
+      <div class="legend"><span><i style="background:var(--amber-s);border:1.5px solid var(--amber)"></i>Disponible</span><span><i style="background:var(--wine)"></i>Seleccionada</span><span><i style="background:var(--dis)"></i>No disponible</span></div>
+      <fieldset style="border:0;padding:0;margin:0" id="mesas"><legend class="note" style="padding:0;margin-bottom:8px">Mesas disponibles</legend>
+        <div class="tables" id="tables"></div>
+      </fieldset>
+      <div class="alert bad" id="alerta2" role="alert"></div>
+      <button class="btn wide" type="button" id="continuar2" style="margin-top:14px">Continuar →</button>
+    </section>
+  </div>
+
+  <!-- 3. Confirmación -->
+  <section class="s3 locked" id="p3" aria-labelledby="h3s" inert>
+    <h2 id="h3s"><span class="n">3</span>Confirmación</h2>
+    <div class="row3">
+      <p class="box" style="margin:0"><span class="ck" aria-hidden="true">✓</span><span id="msg">Una vez seleccionada la mesa, confirma la reserva.</span></p>
+      <button class="btn amber" type="button" id="confirmar" disabled>Confirmar reserva</button>
+    </div>
+    <div class="alert bad" id="alerta3" role="alert"></div>
+  </section>
+</main>
+
+<dialog id="ok"><div class="dlg">
+  <div class="check" aria-hidden="true">✓</div>
+  <h2>¡Reserva confirmada!</h2>
+  <p class="note" style="font-size:15px">Te esperamos en Buen Sabor.</p>
+  <dl id="resumen"></dl>
+  <button class="btn wide" type="button" id="nueva">Hacer otra reserva</button>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
