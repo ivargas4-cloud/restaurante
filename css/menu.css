@@ -79,3 +79,13 @@ dialog[open]{animation:pop .25s ease}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;font-size:14px;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* === Botón de login en el nav === */
+.nav .btn.login{
+  background:transparent;
+  border:2px solid #fff;
+  color:#fff;
+  padding:10px 18px;
+  font-size:15px;
+}
+.nav .btn.login:hover{background:rgba(255,255,255,.2)}
