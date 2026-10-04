@@ -55,7 +55,7 @@ function render(lista,titulo,vacio){
     <button class="btn ghost" type="button" data-k="${k}" data-j="${j}">Ver imagen</button></article>`).join(''):`<p class="empty">${vacio}</p>`;
 }
 function mostrarCategoria(k){
-  activa=k;$('q').value='';
+  activa=k;
   document.querySelectorAll('.cat').forEach((b,i)=>b.setAttribute('aria-pressed',i===k));
   render(CATS[k].items.map((x,j)=>({x,c:CATS[k],k,j})),CATS[k].n);
   actualizarContinuar();
@@ -69,7 +69,6 @@ function buscar(){
 }
 
 $('cats').addEventListener('click',e=>{const b=e.target.closest('.cat');if(b)mostrarCategoria(+b.dataset.k)});
-$('q').addEventListener('input',buscar);
 $('cards').addEventListener('click',e=>{
   const b=e.target.closest('button[data-k]');if(!b)return;
   const x=CATS[b.dataset.k].items[b.dataset.j];
