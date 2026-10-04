@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carta gastronómica · Buen Sabor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23ff9f1c' stroke='%23a31621' stroke-width='4'/%3E%3Ctext x='32' y='41' font-size='26' font-weight='800' text-anchor='middle' fill='%23a31621' font-family='Arial'%3EBS%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/menu.css">
+</head>
+<body>
+<header class="top">
+  <nav class="nav" aria-label="Principal">
+    <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
+    <span class="brand">Buen Sabor</span>
+    <ul>
+      <li><a href="#" id="navInicio">Inicio</a></li>
+      <li><a href="#" aria-current="page">Menú</a></li>
+      <li><a href="#" id="navReservas">Reservas</a></li>
+      <li><a href="#" data-soon>Contacto</a></li>
+    </ul>
+    <input class="search" id="q" type="search" placeholder="Buscar..." aria-label="Buscar en la carta">
+  </nav>
+</header>
+
+<main>
+  <div class="bar">
+    <button class="back" type="button" id="back">← Volver</button>
+    <h1>Carta gastronómica</h1>
+    <span></span>
+  </div>
+
+  <section class="wrap">
+    <h2 class="sec"><span class="n">1</span>Categorías</h2>
+    <div class="cats" id="cats" role="group" aria-label="Categorías"></div>
+
+    <h2 class="sec"><span class="n">2</span><span id="tit">Entradas</span></h2>
+    <div class="cards" id="cards" aria-live="polite"></div>
+
+    <button class="btn wide" type="button" id="continuar">Continuar →</button>
+    <p class="note" id="ayuda"></p>
+  </section>
+</main>
+
+<dialog id="dlg"><div class="dlg">
+  <div class="img" id="dimg"></div>
+  <h2 id="dn"></h2>
+  <p class="desc" id="dd" style="margin-bottom:4px"></p>
+  <p class="price" id="dp"></p>
+  <button class="btn wide" type="button" id="cerrar">Cerrar</button>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/menu.js"></script>
+</body>
+</html>
