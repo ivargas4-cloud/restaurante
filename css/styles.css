@@ -19,7 +19,7 @@ button,input,select{font:inherit;color:inherit}
 .nav{border:3px solid #a31621;border-radius:14px;background:linear-gradient(135deg,#d62828,#a31621);color:#fff;box-shadow:0 5px 14px rgba(163,22,33,.25);padding:12px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .logo{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:23px;letter-spacing:-1px;color:#a31621;background:radial-gradient(circle at 30% 25%,#ffd36b,#ff9f1c);border:3px solid #fff;box-shadow:0 0 0 2px #a31621,0 4px 10px rgba(0,0,0,.25);font-family:"Bricolage Grotesque",sans-serif}
 .brand{font-size:24px;font-weight:700;margin-right:auto;color:#fff}
-.nav ul{list-style:none;display:flex;gap:10px;margin:0;padding:0;flex-wrap:wrap}
+.nav > ul{list-style:none;display:flex;margin:0;padding:0;flex-wrap:wrap}
 .nav a{color:#fff;text-decoration:none;padding:10px 18px;border-radius:12px;border:2.5px solid transparent;font-weight:600;font-size:19px;display:inline-block}
 .nav a:hover{background:rgba(255,255,255,.2)}
 .nav a[aria-current]{border-color:var(--amber);background:var(--amber);color:#3a2300;font-weight:700}
@@ -111,3 +111,99 @@ dt{color:var(--muted)}dd{margin:0;font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;font-size:14px;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* === Botón de login en el nav (reemplaza la barra de búsqueda) === */
+.nav .btn.login{
+  background:transparent;
+  border:2px solid #fff;
+  color:#fff;
+  padding:10px 18px;
+  font-size:15px;
+}
+.nav .btn.login:hover{background:rgba(255,255,255,.2)}
+
+/* === Layout del panel de administración (sidebar + contenido) === */
+.admin-layout{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  gap:20px;
+  align-items:start;
+}
+@media(max-width:820px){.admin-layout{grid-template-columns:1fr}}
+
+/* === Sidebar === */
+.sidebar{
+  background:var(--card);
+  border:2px solid var(--wine);
+  border-top:8px solid var(--amber);
+  border-radius:16px;
+  padding:20px;
+}
+.sidebar-title{font-size:16px;margin:0 0 14px;color:var(--wine-d)}
+.sidebar-menu{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:6px}
+.sidebar-menu a{
+  display:block;
+  padding:10px 12px;
+  border-radius:10px;
+  color:var(--ink);
+  text-decoration:none;
+  font-weight:500;
+  font-size:15px;
+}
+.sidebar-menu a:hover{background:var(--amber-s)}
+.sidebar-menu a.active{background:var(--wine);color:#fff;font-weight:700}
+.admin-dropdown{width:100%;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);font-size:14px;padding:10px 12px}
+.admin-dropdown:hover{border-color:var(--amber)}
+
+/* === Encabezado del panel con botón "Editar información" === */
+.panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.panel-header h2{margin:0}
+
+/* === Checkboxes de servicios === */
+.chk{display:flex;align-items:center;gap:8px;font-weight:500;font-size:15px;margin-bottom:8px}
+.chk input{width:18px;height:18px;accent-color:var(--wine)}
+fieldset.f{border:0;padding:0;margin:0 0 16px}
+fieldset.f legend{font-weight:600;font-size:14px;padding:0;margin-bottom:6px}
+fieldset.f:disabled{opacity:.6}
+
+/* === Botones de acción del formulario (Cancelar / Guardar) === */
+.form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+@media(max-width:520px){.form-actions{flex-direction:column}}
+.form-actions .btn{flex:none}
+
+/* === Alerta de confirmación (verde, distinta a la .alert.bad roja que ya existe) === */
+
+.alert.ok .ck{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--ok);color:#fff;
+  display:grid;place-items:center;font-size:13px;flex:none;
+}
+.alert.ok:not([hidden]){
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:color-mix(in srgb,var(--ok) 12%,var(--card));
+  border:1.5px solid var(--ok);
+  color:var(--ok);
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:14px;
+  font-weight:600;
+}
+.dropdown{position:relative}
+.btn-dropdown{
+  background:transparent;border:2.5px solid transparent;color:#fff;
+  font-weight:600;font-size:19px;padding:10px 18px;border-radius:12px;cursor:pointer;
+}
+.btn-dropdown:hover{background:rgba(255,255,255,.2)}
+.dropdown-menu{
+  position:absolute;top:calc(100% + 8px);right:0;min-width:220px;
+  background:var(--card);border:2px solid var(--wine);border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.2);list-style:none;margin:0;padding:8px;z-index:10;
+}
+.dropdown-menu li a{
+  display:block;padding:10px 12px;border-radius:8px;color:var(--ink);
+  text-decoration:none;font-weight:500;font-size:15px;
+}
+.dropdown-menu li a:hover{background:var(--amber-s)}
+.dropdown-menu li a.active{background:var(--wine);color:#fff;font-weight:700}

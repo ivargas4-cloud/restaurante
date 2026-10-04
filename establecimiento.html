@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Información del establecimiento · Buen Sabor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23ff9f1c' stroke='%23a31621' stroke-width='4'/%3E%3Ctext x='32' y='41' font-size='26' font-weight='800' text-anchor='middle' fill='%23a31621' font-family='Arial'%3EBS%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="top">
+  <nav class="nav" aria-label="Principal">
+  <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
+  <span class="brand">Buen Sabor</span>
+  <ul>
+    <li><a href="#" id="navInicio">Inicio</a></li>
+    <li><a href="#" data-soon>Menú</a></li>
+    <li><a href="#" data-soon>Reservas</a></li>
+    <li><a href="#" data-soon>Contacto</a></li>
+    <li class="dropdown">
+      <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">
+        Administración ▾
+      </button>
+      <ul class="dropdown-menu" id="adminMenu" hidden>
+        <li><a href="#" data-soon>🏠 Inicio</a></li>
+        <li><a href="#" data-soon>🗓️ Reservas</a></li>
+        <li><a href="#" data-soon>🍽️ Carta gastronómica</a></li>
+        <li><a href="#" aria-current="page" class="active">🏪 Información del establecimiento</a></li>
+        <li><a href="#" data-soon>👥 Usuarios</a></li>
+        <li><a href="#" data-soon>⚙️ Configuración</a></li>
+      </ul>
+    </li>
+  </ul>
+  <button class="btn login" type="button" id="btnLogin">Administrador</button>
+</nav>
+</header>
+
+<main>
+
+<!-- 2. Información del establecimiento -->
+  <section class="panel" id="p1" aria-labelledby="h2s">
+    <div class="panel-header">
+      <h2 id="h2s"><span class="n">1</span>Información del establecimiento</h2>
+      <button class="btn" type="button" id="btnEditar">✏️ Editar información</button>
+    </div>
+
+    <form id="formInfo" novalidate>
+      <div class="grid2">
+        <!-- Columna izquierda -->
+        <div class="f">
+          <label for="nombreEst">Nombre del establecimiento <span class="req">*</span></label>
+          <input class="ctl" id="nombreEst" name="nombreEst" type="text" value="Buen Sabor" disabled>
+          <p class="err" id="e-nombreEst"></p>
+        </div>
+        <div class="f">
+          <label for="direccion">Dirección <span class="req">*</span></label>
+          <input class="ctl" id="direccion" name="direccion" type="text" placeholder="Cra 15 #50-20, Medellín" disabled>
+          <p class="err" id="e-direccion"></p>
+        </div>
+        <div class="f">
+          <label for="telefono">Teléfono <span class="req">*</span></label>
+          <input class="ctl" id="telefono" name="telefono" type="tel" inputmode="numeric" placeholder="3001234567" disabled>
+          <p class="err" id="e-telefono"></p>
+        </div>
+        <div class="f">
+          <label for="horarios">Horarios de atención <span class="req">*</span></label>
+          <input class="ctl" id="horarios" name="horarios" type="text" placeholder="Lun-Dom 8:00am - 10:00pm" disabled>
+          <p class="err" id="e-horarios"></p>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="f">
+          <label for="descripcion">Descripción <span class="req">*</span></label>
+          <textarea class="ctl" id="descripcion" name="descripcion" rows="3" placeholder="Restaurante de comida tradicional." disabled></textarea>
+          <p class="err" id="e-descripcion"></p>
+        </div>
+        <fieldset class="f" id="servicios" disabled>
+          <legend>Servicios</legend>
+          <label class="chk"><input type="checkbox" id="svcWifi" name="servicios" value="wifi"> Wifi</label>
+          <label class="chk"><input type="checkbox" id="svcDomicilios" name="servicios" value="domicilios"> Domicilios</label>
+          <label class="chk"><input type="checkbox" id="svcTerraza" name="servicios" value="terraza"> Terraza</label>
+        </fieldset>
+        <div class="f">
+          <label for="galeria">Galería de imágenes</label>
+          <input class="ctl" id="galeria" name="galeria" type="file" accept="image/*" multiple disabled>
+          <p class="err" id="e-galeria"></p>
+        </div>
+      </div>
+
+      <p class="note"><span class="req">*</span> Los campos marcados son obligatorios.</p>
+
+      <div class="form-actions">
+        <button class="btn" type="button" id="btnCancelar" disabled>Cancelar</button>
+        <button class="btn amber" type="submit" id="btnGuardar" disabled>Guardar cambios</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2. Confirmación -->
+  <section class="panel" id="p2" aria-labelledby="h3s">
+    <h2 id="h3s"><span class="n">2</span>Confirmación</h2>
+    <div class="alert ok" id="alertaOk" role="status" hidden>
+      <span class="ck" aria-hidden="true">✓</span>
+      <span id="msgOk">Actualización exitosa</span>
+    </div>
+  </section>
+</main>
+
+<script src="js/establecimiento.js"></script>
+</body>
+</html>
