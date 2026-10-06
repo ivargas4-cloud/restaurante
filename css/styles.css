@@ -207,3 +207,5 @@ fieldset.f:disabled{opacity:.6}
 }
 .dropdown-menu li a:hover{background:var(--amber-s)}
 .dropdown-menu li a.active{background:var(--wine);color:#fff;font-weight:700}
+
+.btn-dropdown.login{border:2px solid #fff;font-size:15px}

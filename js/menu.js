@@ -1,3 +1,6 @@
+document.getElementById('btnLogin').addEventListener('click', () => {
+  window.location.href = 'login.html';
+});
 const PAGINA_RESERVAS='index.html'; // página de Reservas
 const $=id=>document.getElementById(id);
 /* img: ruta de una foto real (ej. 'img/bruschetta.jpg'); si está vacío se muestra el emoji */

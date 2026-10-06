@@ -1,3 +1,6 @@
+document.getElementById('btnLogin').addEventListener('click', () => {
+  window.location.href = 'login.html';
+});
 const $=id=>document.getElementById(id);
 const MESAS=[{n:1,c:2},{n:2,c:2},{n:3,c:4},{n:4,c:6},{n:5,c:8},{n:6,c:10}];
 const campos=['nombre','celular','personas','fecha','hora','correo'];

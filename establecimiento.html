@@ -15,9 +15,9 @@
   <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
   <span class="brand">Buen Sabor</span>
   <ul>
-    <li><a href="#" id="navInicio">Inicio</a></li>
-    <li><a href="#" data-soon>Menú</a></li>
-    <li><a href="#" data-soon>Reservas</a></li>
+    <li><a href="#" data-soon>Inicio</a></li>
+    <li><a href="menu.html">Menú</a></li>
+    <li><a href="index.html">Reservas</a></li>
     <li><a href="#" data-soon>Contacto</a></li>
     <li class="dropdown">
       <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">
@@ -25,15 +25,20 @@
       </button>
       <ul class="dropdown-menu" id="adminMenu" hidden>
         <li><a href="#" data-soon>🏠 Inicio</a></li>
-        <li><a href="#" data-soon>🗓️ Reservas</a></li>
+        <li><a href="#" data-soon>🗓️ Agenda y aforo</a></li>
         <li><a href="#" data-soon>🍽️ Carta gastronómica</a></li>
         <li><a href="#" aria-current="page" class="active">🏪 Información del establecimiento</a></li>
-        <li><a href="#" data-soon>👥 Usuarios</a></li>
-        <li><a href="#" data-soon>⚙️ Configuración</a></li>
       </ul>
     </li>
   </ul>
-  <button class="btn login" type="button" id="btnLogin">Administrador</button>
+  <div class="dropdown">
+  <button class="btn-dropdown login" type="button" id="btnUserMenu" aria-haspopup="true" aria-expanded="false">
+    👤 Administrador ▾
+  </button>
+  <ul class="dropdown-menu" id="userMenu" hidden>
+    <li><a href="#" id="btnLogout">Cerrar sesión</a></li>
+  </ul>
+</div>
 </nav>
 </header>
 

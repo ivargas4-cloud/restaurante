@@ -23,6 +23,26 @@ adminMenu.querySelectorAll('a').forEach(link => {
   });
 });
 
+const btnUserMenu = document.getElementById('btnUserMenu');
+const userMenu = document.getElementById('userMenu');
+
+btnUserMenu.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const abierto = !userMenu.hidden;
+  userMenu.hidden = abierto;
+  btnUserMenu.setAttribute('aria-expanded', String(!abierto));
+});
+
+document.addEventListener('click', () => {
+  userMenu.hidden = true;
+  btnUserMenu.setAttribute('aria-expanded', 'false');
+});
+
+document.getElementById('btnLogout').addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = 'menu.html';
+});
+
 // --- 1. Seleccionamos todos los elementos que vamos a necesitar ---
 const form = document.getElementById('formInfo');
 const btnEditar = document.getElementById('btnEditar');
