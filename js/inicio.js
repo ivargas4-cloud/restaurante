@@ -1,13 +1,9 @@
-/* Páginas a las que navegan los botones. Si está vacío, solo muestra un aviso. */
-const PAGINAS={inicio:'',menu:'menu.html',reservas:'index.html'};
-
 const $=id=>document.getElementById(id);
-let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2000)}
-const NOMBRES={inicio:'Inicio',menu:'Menú',reservas:'Reservas'};
-document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',e=>{
-  e.preventDefault();const p=PAGINAS[el.dataset.go];
-  p?location.href=p:toast('Aquí pasarías a: '+NOMBRES[el.dataset.go]);
-}));
+
+document.getElementById('btnLogin').addEventListener('click', () => {
+  window.location.href = 'login.html';
+});
+
 document.querySelectorAll('[data-soon]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();toast((a.getAttribute('aria-label')||a.textContent)+': enlace de ejemplo')}));
 
 /* ---------- Carrusel de la galería ---------- */

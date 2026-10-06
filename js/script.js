@@ -110,7 +110,7 @@ $('nueva').onclick=()=>{
 };
 
 let tt;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1800)}
-const PAGINA_INICIO='';
+const PAGINA_INICIO='inicio.html';
 function irInicio(e){e&&e.preventDefault();PAGINA_INICIO?location.href=PAGINA_INICIO:toast('Volver: aquí te llevaría al Inicio del restaurante')}
 $('back').onclick=irInicio;$('navInicio').onclick=irInicio;
 document.querySelectorAll('[data-soon]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();toast(a.textContent+': página fuera del alcance del prototipo')}));
