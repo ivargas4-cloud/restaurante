@@ -16,8 +16,7 @@ document.addEventListener('click', () => {
 
 // Cerrar el menú y evitar el salto de página al hacer clic en una opción
 adminMenu.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
+  link.addEventListener('click', () => {
     adminMenu.hidden = true;
     btnAdminNav.setAttribute('aria-expanded', 'false');
   });
