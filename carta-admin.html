@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Administración de la carta: agregar platos, ajustar precios y disponibilidad. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -8,16 +9,20 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body data-page="carta-admin">
 
+<!-- Navegación administrativa con menús para las secciones y la cuenta. -->
 <header class="top">
   <nav class="nav" aria-label="Principal">
-    <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
+    <div class="logo">
+      <img src="img/logo.png" alt="Logo Buen Sabor" class="logo-img">
+    </div>
     <span class="brand">Buen Sabor</span>
     <ul>
       <li><a href="inicio.html">Inicio</a></li>
       <li><a href="menu.html">Menú</a></li>
       <li><a href="index.html">Reservas</a></li>
+      <li><a href="#" data-soon>Contacto</a></li>
       <li class="dropdown">
         <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">
           Administración ▾
@@ -41,11 +46,13 @@
 </header>
 
 <main>
-    <section class="panel" id="pMenu" aria-labelledby="hMenu">
+  <!-- Catálogo editable: formulario de alta, filtros por categoría y listado generado por JS. -->
+  <section class="panel" id="pMenu" aria-labelledby="hMenu">
     <div class="panel-header">
-        <h2 id="hMenu"><span class="n">1</span>Catálogo de platos</h2>
+      <h2 id="hMenu"><span class="n">1</span>Catálogo de platos</h2>
     </div>
 
+    <!-- Formulario plegable para incorporar un plato y, opcionalmente, su fotografía. -->
     <details class="panel" style="margin-bottom:18px;padding:16px 24px">
       <summary style="cursor:pointer;font-weight:700;color:var(--wine-d)">➕ Agregar nuevo plato</summary>
       <form id="formNuevoPlato" novalidate style="margin-top:16px">
@@ -73,29 +80,33 @@
           <div class="f">
             <label for="npFoto">Foto del plato (opcional)</label>
             <input class="ctl" id="npFoto" name="foto" type="file" accept="image/*">
-          </div>  
+            <p class="err" id="e-npFoto"></p>
+          </div>
         </div>
         <button class="btn" type="submit" id="btnAgregarPlato">Agregar plato</button>
       </form>
     </details>
 
+    <!-- El filtro y las filas del catálogo se construyen dinámicamente en app.js. -->
     <div class="cats-filter" id="catsFilter" role="group" aria-label="Filtrar por categoría"></div>
 
     <div id="listaPlatos"></div>
 
+    <!-- Guarda disponibilidad, precios y fotografías pendientes del catálogo. -->
     <div class="form-actions">
-        <button class="btn amber" type="button" id="btnGuardarMenu">Guardar cambios</button>
+      <button class="btn amber" type="button" id="btnGuardarMenu">Guardar cambios</button>
     </div>
 
     <div class="alert ok" id="alertaMenuOk" role="status" hidden>
-        <span class="ck" aria-hidden="true">✓</span>
-        <span>Carta actualizada correctamente</span>
+      <span class="ck" aria-hidden="true">✓</span>
+      <span>Carta actualizada correctamente</span>
     </div>
-    <div class="alert bad" id="alertaMenuErr" role="alert" hidden></div>
-    </section>
+    <div class="alert bad" id="alertaMenuErr" role="alert"></div>
+  </section>
 </main>
 
-<script src="js/datos-menu.js"></script>
-<script src="js/carta-admin.js"></script>
+<div class="toast" id="toast" role="status"></div>
+<!-- Inicializa la gestión de la carta cuando data-page vale "carta-admin". -->
+<script src="js/app.js"></script>
 </body>
 </html>

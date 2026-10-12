@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Acceso administrativo: formulario de usuario y contraseña. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -8,18 +9,22 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body data-page="login">
 
+<!-- Encabezado simplificado sin navegación para centrar el flujo de acceso. -->
 <header class="top">
   <nav class="nav" aria-label="Principal">
-    <div class="logo" role="img" aria-label="Logo de Buen Sabor">BS</div>
+    <div class="logo">
+      <img src="img/logo.png" alt="Logo Buen Sabor" class="logo-img">
+    </div>
     <span class="brand">Buen Sabor</span>
   </nav>
 </header>
 
 <main>
-  <button class="back" type="button" id="back">← Volver</button>
+  <button class="back" type="button" data-href="inicio.html">← Volver</button>
   <div style="max-width:420px;margin:24px auto 0">
+    <!-- Los errores de validación se presentan junto al campo correspondiente. -->
     <section class="panel" id="pLogin" aria-labelledby="hLogin">
       <h2 id="hLogin"><span class="n">1</span>Iniciar sesión</h2>
       <form id="formLogin" novalidate>
@@ -39,6 +44,7 @@
   </div>
 </main>
 
-<script src="js/login.js"></script>
+<!-- Inicializa la validación del formulario de acceso y los controles compartidos. -->
+<script src="js/app.js"></script>
 </body>
 </html>
