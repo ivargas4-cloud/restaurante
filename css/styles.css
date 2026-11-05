@@ -47,8 +47,18 @@ main{width:100%;max-width:1248px;margin:0 auto;padding:20px 24px 32px}
 .logo{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:23px;letter-spacing:-1px;color:#a31621;background:radial-gradient(circle at 30% 25%,#ffd36b,#ff9f1c);border:3px solid #fff;box-shadow:0 0 0 2px #a31621,0 4px 10px rgba(0,0,0,.25);font-family:"Bricolage Grotesque",sans-serif;overflow:hidden}
 .logo img{width:100%;height:100%;object-fit:cover;display:block}
 .brand{font-size:24px;font-weight:700;margin-right:auto;color:#fff}
-.nav > ul{list-style:none;display:flex;gap:10px;margin:0;padding:0;flex-wrap:wrap}
-@media(max-width:640px){.nav > ul{order:2;flex:1 1 100%}}
+.nav-toggle{display:none;width:46px;height:46px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.nav-toggle:hover{background:rgba(255,255,255,.2)}
+.nav-menu{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nav-menu > ul{list-style:none;display:flex;gap:10px;margin:0;padding:0;flex-wrap:wrap}
+@media(max-width:900px){
+  .nav-toggle{display:block}
+  .nav-menu{display:none;width:100%;flex-direction:column;align-items:stretch;gap:12px}
+  .nav-menu.abierto{display:flex}
+  .nav-menu > ul{flex-direction:column}
+  .nav-menu .btn.login,.nav-menu .btn-dropdown{width:100%;text-align:left}
+  .nav-menu .dropdown-menu{position:static;box-shadow:none;margin-top:6px;min-width:0}
+}
 .nav a{color:#fff;text-decoration:none;padding:10px 18px;border-radius:12px;border:2.5px solid transparent;font-weight:600;font-size:19px;display:inline-block}
 .nav a:hover{background:rgba(255,255,255,.2)}
 .nav a[aria-current]{border-color:var(--amber);background:var(--amber);color:#3a2300;font-weight:700}
@@ -178,9 +188,9 @@ body[data-page="reservas"] #p2 .btn{margin-top:auto}
 .hero-acciones{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hero-acciones .btn{display:inline-block;text-decoration:none}
 
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;align-items:stretch}
-@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.grid{grid-template-columns:1fr}}
+body[data-page="inicio"] .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;align-items:stretch}
+@media(max-width:1000px){body[data-page="inicio"] .grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){body[data-page="inicio"] .grid{grid-template-columns:1fr}}
 .col{display:flex;flex-direction:column;gap:20px}
 body[data-page="inicio"] .card{background:var(--card);border:2.5px solid var(--wine);border-radius:16px;padding:22px;box-shadow:0 6px 18px rgba(214,40,40,.1)}
 body[data-page="inicio"] .card.grow{flex:1}
@@ -213,7 +223,7 @@ body[data-page="inicio"] .card p{margin:0 0 10px}
 .soc:hover{background:var(--amber-s);transform:translateY(-2px)}
 .mapa{display:flex;flex-direction:column;border:2.5px solid var(--wine);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--wine-d);font-weight:700;transition:transform .2s}
 .mapa:hover{transform:translateY(-3px)}
-.mapa svg{width:100%;height:auto;display:block}
+.mapa svg{width:100%;height:clamp(150px,16vw,210px);display:block}
 .mapa span{padding:6px 12px;text-align:center;background:var(--amber-s);font-size:14px}
 
 .hrs{list-style:none;margin:0;padding:0;display:grid;gap:14px}
@@ -287,3 +297,75 @@ body[data-page="menu"] .dlg h2{margin:0 0 4px}
 @media(max-width:620px){.plato-row{grid-template-columns:1fr}}
 .plato-thumb{width:40px;height:40px;object-fit:cover;border-radius:8px;border:1.5px solid var(--line)}
 .plato-foto-input{font-size:12px;max-width:160px}
+
+/* ---------- 9. Agenda y aforo (agenda.html) ---------- */
+.reserva,.franja{border:2px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--bg)}
+.reserva p,.franja p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.etiqueta{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;background:var(--amber-s);color:#3a2300}
+.etiqueta.atendida,.etiqueta.ok{background:color-mix(in srgb,var(--ok) 16%,var(--card));color:var(--ok)}
+.etiqueta.cancelada,.etiqueta.bloqueada{background:var(--dis);color:var(--muted)}
+.etiqueta.llena{background:color-mix(in srgb,var(--err) 14%,var(--card));color:var(--err)}
+.barra{height:8px;border-radius:999px;background:var(--dis);overflow:hidden;margin-top:8px}
+.barra span{display:block;height:100%;background:var(--amber);transition:width .4s}
+.franja.llena .barra span{background:var(--err)}
+.btn-sm{padding:8px 14px;font-size:14px}
+
+@media(min-width:701px) and (max-width:1100px){
+  body[data-page="inicio"] .grid{grid-template-columns:1fr 1fr}
+  body[data-page="inicio"] .grid>.col:first-child{grid-column:auto}
+  body[data-page="inicio"] .grid>.col:last-child{grid-column:1/-1}
+}
+
+/* ---------- 9. Mejoras de diseño (barra fija + estilo más suave) ---------- */
+html{scroll-padding-top:96px}
+.top{position:sticky;top:0;z-index:50;background:var(--bg);padding-bottom:12px}
+.nav{border:0;border-radius:18px;box-shadow:0 10px 26px rgba(163,22,33,.28);padding:10px 22px}
+.logo{width:48px;height:48px;font-size:21px}
+@media(max-width:900px){.nav-menu.abierto{max-height:calc(100vh - 110px);overflow-y:auto}}
+
+/* Tarjetas y paneles: borde fino, esquinas amplias y sombra suave */
+.panel,body[data-page="inicio"] .card,body[data-page="menu"] .card{border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 3px rgba(43,20,16,.05),0 14px 30px rgba(163,22,33,.08)}
+.panel{border-top:5px solid var(--amber)}
+body[data-page="inicio"] .card{padding:26px}
+body[data-page="inicio"] .card h2{font-size:20px}
+body[data-page="inicio"] .ic{background:var(--amber-s);border-color:transparent}
+
+/* Encabezado de Inicio con degradado cálido */
+.hero{border:0;border-radius:22px;background:linear-gradient(120deg,var(--card) 0%,var(--amber-s) 100%);box-shadow:0 14px 30px rgba(163,22,33,.10);padding:28px 36px}
+.hero h1{margin-top:0}
+
+/* Elementos internos más ligeros */
+.circles .c{border-width:2px}
+.mapa{border:1px solid var(--line);border-radius:14px}
+.btn{box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+body[data-page="inicio"] .card.esperamos{background:linear-gradient(160deg,var(--card),var(--amber-s))}
+
+/* Evita que las tarjetas de Inicio se salgan de la pantalla en el celular */
+.col{min-width:0}
+@media(max-width:700px){body[data-page="inicio"] .grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- 10. Estilo unificado en todo el sitio ---------- */
+:root{--c2:#b86e00;--c3:#2f7d4f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c3:#7bc496}}
+:root[data-theme="dark"]{--c3:#7bc496}
+
+.wrap{border:1px solid var(--line);border-top:5px solid var(--amber);border-radius:20px;box-shadow:0 1px 3px rgba(43,20,16,.05),0 14px 30px rgba(163,22,33,.08)}
+.box{border:1px solid var(--line);border-radius:14px}
+.box .ck{border-width:1.5px}
+.cat{border:2px solid var(--line);border-radius:14px}
+.cat:hover,.cat[aria-pressed="true"]{border-color:var(--cat)}
+.dropdown-menu{border:1px solid var(--line);border-radius:14px}
+.ic,.soc{border-width:1.5px}
+.viewport{border:0;border-radius:16px}
+.mapa{border:1px solid var(--line)}
+.chips li,.circles .c{border-width:1.5px}
+
+body[data-page="menu"] .btn,body[data-page="menu"] .btn.wide,.s3 .btn{border:0}
+body[data-page="menu"] .card .btn{background:var(--amber-s);color:var(--wine-d)}
+body[data-page="menu"] .card .btn:hover{background:var(--amber);color:#3a2300}
+.s3 .btn:disabled{border:0}
+
+/* El mapa ocupa todo el espacio libre de la tarjeta Dirección */
+.dir .mapa{flex:1;min-height:170px}
+.dir .mapa svg{flex:1;height:auto;min-height:0}
