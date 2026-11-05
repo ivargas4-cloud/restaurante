@@ -12,39 +12,7 @@
 <body data-page="carta-admin">
 
 <!-- Navegación administrativa con menús para las secciones y la cuenta. -->
-<header class="top">
-  <nav class="nav" aria-label="Principal">
-    <div class="logo">
-      <img src="img/logo.png" alt="Logo Buen Sabor" class="logo-img">
-    </div>
-    <span class="brand">Buen Sabor</span>
-    <ul>
-      <li><a href="inicio.html">Inicio</a></li>
-      <li><a href="menu.html">Menú</a></li>
-      <li><a href="index.html">Reservas</a></li>
-      <li><a href="#" data-soon>Contacto</a></li>
-      <li class="dropdown">
-        <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">
-          Administración ▾
-        </button>
-        <ul class="dropdown-menu" id="adminMenu" hidden>
-          <li><a href="#" data-soon>🗓️ Agenda y aforo</a></li>
-          <li><a href="carta-admin.html" aria-current="page" class="active">🍽️ Carta gastronómica</a></li>
-          <li><a href="establecimiento.html">🏪 Información del establecimiento</a></li>
-        </ul>
-      </li>
-    </ul>
-    <div class="dropdown">
-      <button class="btn-dropdown login" type="button" id="btnUserMenu" aria-haspopup="true" aria-expanded="false">
-        👤 Administrador ▾
-      </button>
-      <ul class="dropdown-menu" id="userMenu" hidden>
-        <li><a href="#" id="btnLogout">Cerrar sesión</a></li>
-      </ul>
-    </div>
-  </nav>
-</header>
-
+<header class="top"></header>
 <main>
   <!-- Catálogo editable: formulario de alta, filtros por categoría y listado generado por JS. -->
   <section class="panel" id="pMenu" aria-labelledby="hMenu">

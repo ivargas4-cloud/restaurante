@@ -47,6 +47,17 @@ function guardarLS(clave, valor){
   catch(e){ return false; }
 }
 
+/* Información del establecimiento: valores por defecto + lo que guarde el administrador */
+const INFO_BASE = {
+  nombreEst: 'Buen Sabor',
+  direccion: 'Cra 12 # 45-67, Bucaramanga',
+  telefono: '3001234567',
+  horarios: 'Lunes - Viernes: 10:00 a. m. - 10:00 p. m.; Sábado: 10:00 a. m. - 11:00 p. m.; Domingo: 10:00 a. m. - 9:00 p. m.',
+  descripcion: 'Buen Sabor es un restaurante de comida, postres y bebidas, donde buscamos ofrecer el mejor sabor en cada momento. Contamos con un ambiente familiar, ideal para compartir con familia, amigos y disfrutar un buen momento.',
+  servicios: ['wifi', 'domicilios', 'terraza']
+};
+function leerInfo(){ return Object.assign({}, INFO_BASE, leerLS('infoEstablecimiento', {})); }
+
 /* Lee una imagen y la reduce (máx. 800 px) para que quepa en localStorage */
 function leerImagen(archivo, max = 800){
   return new Promise((resolve, reject) => {
@@ -135,12 +146,58 @@ const CATS=[
   }));
 })();
 
+/* ---------- Reservas y bloqueos (los comparten "Reserva de mesa" y "Agenda y aforo") ---------- */
+/* Zonas del restaurante y su aforo (personas que caben en cada una) */
+const ZONAS = [
+  {id:'salon',   n:'Salón',   i:'🍽️', aforo:40},
+  {id:'terraza', n:'Terraza', i:'🌿', aforo:20},
+  {id:'barra',   n:'Barra',   i:'🥂', aforo:8}
+];
+/* Franjas horarias: de 12:00 a 21:00, cada 30 minutos */
+const HORAS = [];
+for(let m = 12*60; m <= 21*60; m += 30) HORAS.push(String(Math.floor(m/60)).padStart(2,'0') + ':' + (m % 60 ? '30' : '00'));
+
+const getReservas = () => leerLS('reservas', []);
+const getBloqueos = () => leerLS('bloqueos', []);
+/* Reservas que ocupan lugar (las canceladas no cuentan) */
+const activas = (zona, fecha, hora) => getReservas().filter(r => r.estado !== 'Cancelada' && r.zona === zona && r.fecha === fecha && r.hora === hora);
+const personasEn = (zona, fecha, hora) => activas(zona, fecha, hora).reduce((t, r) => t + r.personas, 0);
+const estaBloqueada = (zona, fecha, hora) => getBloqueos().some(b => b.zona === zona && b.fecha === fecha && b.hora === hora);
+
+function registrarReserva(datos){
+  const reservas = getReservas();
+  reservas.push({...datos, id: Date.now(), estado: 'Confirmada'});
+  return guardarLS('reservas', reservas);
+}
+function cambiarEstadoReserva(id, estado){
+  const reservas = getReservas();
+  const r = reservas.find(x => x.id === id);
+  if(r) r.estado = estado;
+  return guardarLS('reservas', reservas);
+}
+function bloquearFranja(zona, fecha, hora){
+  if(estaBloqueada(zona, fecha, hora)) return true;
+  const bloqueos = getBloqueos();
+  bloqueos.push({zona, fecha, hora});
+  return guardarLS('bloqueos', bloqueos);
+}
+function habilitarFranja(zona, fecha, hora){
+  return guardarLS('bloqueos', getBloqueos().filter(b => !(b.zona === zona && b.fecha === fecha && b.hora === hora)));
+}
+
 
 /* ---------- 3. Navegación compartida ---------- */
 function initNav(){
   /* Botón "Iniciar Sesión" (páginas públicas) */
   const login = $('btnLogin');
   if(login) login.addEventListener('click', () => { location.href = 'login.html'; });
+
+    /* Botón ☰ del menú en pantallas pequeñas */
+  const toggle = $('navToggle');
+  if(toggle) toggle.addEventListener('click', () => {
+    const abierto = $('navMenu').classList.toggle('abierto');
+    toggle.setAttribute('aria-expanded', String(abierto));
+  });
 
   /* Botones con destino fijo, ej. "← Volver":  <button data-href="inicio.html"> */
   document.querySelectorAll('[data-href]').forEach(el =>
@@ -176,15 +233,78 @@ function initNav(){
 
     /* Cerrar sesión: vuelve a la carta pública */
     const salir = $('btnLogout');
-    if(salir) salir.addEventListener('click', e => { e.preventDefault(); location.href = 'menu.html'; });
+    if(salir) salir.addEventListener('click', e => { e.preventDefault(); sessionStorage.removeItem('admin'); location.href = 'menu.html'; });
   }
 }
 
+/* ---------- Barra de navegación: se dibuja desde aquí para todas las páginas ---------- */
+const PAGINAS_ADMIN = ['establecimiento', 'carta-admin', 'agenda'];
+
+function renderNav(){
+  const header = document.querySelector('header.top');
+  if(!header) return;
+  const pagina = document.body.dataset.page;
+  const marca = '<div class="logo"><img src="img/logo.png" alt="Logo Buen Sabor" class="logo-img"></div><span class="brand">Buen Sabor</span>';
+
+  if(pagina === 'login'){
+    header.innerHTML = `<nav class="nav" aria-label="Principal">${marca}</nav>`;
+    return;
+  }
+  const admin = PAGINAS_ADMIN.includes(pagina);
+  const enlace = (id, href, texto) => pagina === id
+    ? `<li><a href="#" aria-current="page">${texto}</a></li>`
+    : `<li><a href="${href}">${texto}</a></li>`;
+  const enlaceAdmin = (id, href, texto) => pagina === id
+    ? `<li><a href="${href}" aria-current="page" class="active">${texto}</a></li>`
+    : `<li><a href="${href}">${texto}</a></li>`;
+
+  const enlaces = enlace('inicio', 'inicio.html', 'Inicio') + enlace('menu', 'menu.html', 'Menú')
+    + enlace('reservas', 'index.html', 'Reservas') + '<li><a href="inicio.html#t-cont">Contacto</a></li>';
+  const menuAdmin = `<li class="dropdown">
+        <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">Administración ▾</button>
+        <ul class="dropdown-menu" id="adminMenu" hidden>
+          ${enlaceAdmin('agenda', 'agenda.html', '🗓️ Agenda y aforo')}
+          ${enlaceAdmin('carta-admin', 'carta-admin.html', '🍽️ Carta gastronómica')}
+          ${enlaceAdmin('establecimiento', 'establecimiento.html', '🏪 Información del establecimiento')}
+        </ul>
+      </li>`;
+  const sesion = admin
+    ? `<div class="dropdown">
+        <button class="btn-dropdown login" type="button" id="btnUserMenu" aria-haspopup="true" aria-expanded="false">👤 Administrador ▾</button>
+        <ul class="dropdown-menu" id="userMenu" hidden><li><a href="#" id="btnLogout">Cerrar sesión</a></li></ul>
+      </div>`
+    : '<button class="btn login" type="button" id="btnLogin">Administrador</button>';
+
+  header.innerHTML = `<nav class="nav" aria-label="Principal">${marca}
+    <button class="nav-toggle" type="button" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Abrir o cerrar el menú">☰</button>
+    <div class="nav-menu" id="navMenu"><ul>${enlaces}${admin ? menuAdmin : ''}</ul>${sesion}</div>
+  </nav>`;
+}
 
 /* ---------- 4. Páginas ---------- */
 
 /* ===== Inicio (inicio.html): carrusel de la galería ===== */
 function initInicio(){
+
+  const info = leerInfo();
+  const q = sel => document.querySelector(sel);
+  q('#t-info + p').textContent = info.descripcion;
+  const tel = q('a[href^="tel:"]');
+  tel.textContent = info.telefono.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+  tel.href = 'tel:+57' + info.telefono.replace(/\D/g, '');
+  q('.hrs').innerHTML = info.horarios.split(';').map(t => {
+    const m = t.trim().match(/^(.*?):\s*(\d.*)$/);
+    return m ? `<li><b>${esc(m[1])}</b><span>${esc(m[2])}</span></li>` : `<li><b>${esc(t.trim())}</b></li>`;
+  }).join('');
+  q('.direccion').textContent = info.direccion;
+  q('a.mapa svg').setAttribute('preserveAspectRatio', 'xMidYMid slice');
+  q('a.mapa').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(info.direccion);
+  document.querySelectorAll('.chips li').forEach(li => {
+    const txt = li.textContent.trim().toLowerCase();
+    const clave = ['wifi', 'domicilios', 'terraza'].find(c => txt.includes(c));
+    li.style.display = (!clave || info.servicios.includes(clave)) ? '' : 'none';
+  });
+  
   /* img: ruta de una foto real (ej. 'img/salon.jpg'). Si está vacío se muestra el emoji. */
   const SLIDES=[
     {t:'Fachada del restaurante',e:'🏠',h:10,img:'img/fachada.jpg'},
@@ -194,6 +314,10 @@ function initInicio(){
     {t:'Plato estrella de la casa',e:'🍛',h:40,img:'img/imagen de foto contactp.jpg'},
     {t:'Ambiente familiar',e:'👨‍👩‍👧',h:100,img:'img/familia.jpg'}
   ];
+
+  const fotosGuardadas = leerLS('infoGaleria', []);
+  if(fotosGuardadas.length) SLIDES.splice(0, SLIDES.length, ...fotosGuardadas.map((src, k) => ({t:'Foto ' + (k+1), e:'', h:10, img:src})));
+
   const track = $('track'), car = $('car'), vp = $('viewport');
   let i = 0, timer = null;
   const auto = !matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -291,12 +415,7 @@ function initMenu(){
 
 /* ===== Reserva de mesa (index.html): el Cliente elige la zona ===== */
 function initReservas(){
-  /* Zonas del restaurante y su aforo (personas que caben en cada una) */
-  const ZONAS = [
-    {id:'salon',   n:'Salón',   i:'🍽️', aforo:40},
-    {id:'terraza', n:'Terraza', i:'🌿', aforo:20},
-    {id:'barra',   n:'Barra',   i:'🥂', aforo:8}
-  ];
+  
   const campos = ['nombre','celular','personas','fecha','hora','correo'];
 
   /* Opciones de selects y fecha mínima */
@@ -331,11 +450,9 @@ function initReservas(){
   const validarTodo = () => campos.map(validar).every(Boolean);
 
   /* Disponibilidad simulada: lugares libres de cada zona según el día y la hora */
-  const hash = s => { let x = 0; for(const ch of s) x = (x*31 + ch.charCodeAt(0)) >>> 0; return x; };
+   /* Cupo real de cada zona: aforo menos las reservas hechas (0 si el Administrador bloqueó la franja) */
   function lugaresLibres(z, f, hr){
-    if(+f.slice(-2) === 15) return 0;                       // día 15: todo reservado
-    const ocupados = Math.round(z.aforo * (hash(f + hr + z.id) % 100) / 100);
-    return z.aforo - ocupados;
+    return estaBloqueada(z.id, f, hr) ? 0 : z.aforo - personasEn(z.id, f, hr);
   }
   function pintarZonas(){
     const f = $('fecha').value, hr = $('hora').value, p = +$('personas').value;
@@ -346,7 +463,7 @@ function initReservas(){
       const libres = listo ? lugaresLibres(z, f, hr) : 0;
       const dis = !listo || libres < p;
       if(!dis) disponibles++;
-      const detalle = listo ? (libres ? `Quedan ${libres} cupos` : 'Sin cupo') : `Aforo: ${z.aforo} personas`;
+      const detalle = listo ? (estaBloqueada(z.id, f, hr) ? 'No disponible' : libres ? `Quedan ${libres} cupos` : 'Sin cupo') : `Aforo: ${z.aforo} personas`;
       return `<label class="z"><input type="radio" name="zona" value="${z.id}" ${dis?'disabled':''} ${!dis && pv === z.id ? 'checked' : ''}><span><i class="zi" aria-hidden="true">${z.i}</i>${z.n}<small>${detalle}</small></span></label>`;
     }).join('');
     $('hint').textContent = !listo ? 'Elige fecha, hora y cantidad de personas para ver las zonas.' :
@@ -402,6 +519,15 @@ function initReservas(){
       mostrar('alerta3', 'No se pudo confirmar: hay datos inválidos o falta seleccionar una zona.');
       return;
     }
+    const zona = ZONAS.find(z => z.id === zonaSel().value), personas = +$('personas').value;
+    if(lugaresLibres(zona, $('fecha').value, $('hora').value) < personas){
+      mostrar('alerta3', 'Esa zona ya no tiene cupo para ese horario. Elige otra zona o cambia la hora.');
+      actualizar();
+      return;
+    }
+    registrarReserva({nombre: $('nombre').value.trim(), celular: $('celular').value, correo: $('correo').value.trim(),
+      personas, fecha: $('fecha').value, hora: $('hora').value, zona: zona.id});
+      
     $('resumen').innerHTML = fila('Nombre', esc($('nombre').value.trim())) + fila('Celular', $('celular').value) +
       fila('Fecha', $('fecha').value.split('-').reverse().join('/')) + fila('Hora', $('hora').value) +
       fila('Personas', $('personas').value) + fila('Zona', nombreZona()) +
@@ -432,7 +558,7 @@ function initLogin(){
       }
     });
     if(!esValido) return;
-    /* Al ser solo frontend, cualquier usuario/contraseña entra (no hay validación real) */
+    sessionStorage.setItem('admin', '1');
     location.href = 'establecimiento.html';
   });
 }
@@ -447,6 +573,10 @@ function initEstablecimiento(){
   const serviciosFieldset = $('servicios');
   const textos = ['nombreEst', 'direccion', 'telefono', 'horarios', 'descripcion'];
   let valoresOriginales = {};
+
+  const info = leerInfo();
+  textos.forEach(id => { $(id).value = info[id]; });
+  form.querySelectorAll('input[name="servicios"]').forEach(c => { c.checked = info.servicios.includes(c.value); });
 
   /* Bloquea o habilita todo el formulario */
   function modoEdicion(activo){
@@ -473,7 +603,7 @@ function initEstablecimiento(){
   });
 
   /* "Guardar cambios": valida campos obligatorios y formato de imágenes */
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     let esValido = true;
 
@@ -499,7 +629,24 @@ function initEstablecimiento(){
       }
     }
 
+    if(galeria.files.length > 6){
+      errorGaleria.textContent = 'Máximo 6 imágenes.';
+      esValido = false;
+    }
+
     if(!esValido) return;
+    if(galeria.files.length > 0){
+      const fotos = await Promise.all(Array.from(galeria.files).map(a => leerImagen(a)));
+      if(!guardarLS('infoGaleria', fotos)){
+        errorGaleria.textContent = 'Las imágenes pesan demasiado. Sube menos o más livianas.';
+        return;
+      }
+    }
+    const nuevo = {};
+
+    textos.forEach(id => { nuevo[id] = $(id).value.trim(); });
+    nuevo.servicios = Array.from(form.querySelectorAll('input[name="servicios"]:checked')).map(c => c.value);
+    guardarLS('infoEstablecimiento', nuevo);
     modoEdicion(false);
     alertaOk.hidden = false;
   });
@@ -670,6 +817,150 @@ function initCartaAdmin(){
   renderLista();
 }
 
+/* ===== Gestionar agenda y aforo (agenda.html) ===== */
+function initAgenda(){
+  const filtro = $('filtroFecha'), dlg = $('dlgConfirmar');
+  const fmtFecha = f => f.split('-').reverse().join('/');
+  const nombreZona = id => ZONAS.find(z => z.id === id).n;
+  const orden = (a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora);
+  const hoy = new Date();
+  const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+
+  /* Ventana de confirmación reutilizable: devuelve true si el Administrador acepta */
+  function confirmar(titulo, mensaje, textoAceptar){
+    return new Promise(resolve => {
+      $('dcTitulo').textContent = titulo;
+      $('dcMensaje').textContent = mensaje;
+      $('dcAceptar').textContent = textoAceptar;
+      let acepto = false;
+      $('dcAceptar').onclick = () => { acepto = true; dlg.close(); };
+      $('dcCancelar').onclick = () => dlg.close();
+      dlg.addEventListener('close', () => resolve(acepto), {once: true});
+      dlg.showModal();
+    });
+  }
+  dlg.addEventListener('click', e => { if(e.target === dlg) dlg.close(); });
+
+  /* Listado cronológico de reservas, con filtro opcional por fecha */
+  function renderReservas(){
+    let lista = getReservas().sort(orden);
+    if(filtro.value) lista = lista.filter(r => r.fecha === filtro.value);
+    $('listaReservas').innerHTML = lista.length ? lista.map(r => `
+      <article class="reserva">
+        <div class="flex items-start justify-between gap-2">
+          <strong>${fmtFecha(r.fecha)} · ${r.hora}</strong>
+          <span class="etiqueta ${r.estado.toLowerCase()}">${r.estado}</span>
+        </div>
+        <p>${esc(r.nombre)} · ${esc(r.celular)}</p>
+        <p>${r.personas} ${r.personas > 1 ? 'personas' : 'persona'} · ${nombreZona(r.zona)}</p>
+        ${r.estado === 'Confirmada' ? `<div class="flex flex-wrap gap-2 mt-3">
+          <button class="btn amber btn-sm" type="button" data-accion="atender" data-id="${r.id}">Marcar atendida</button>
+          <button class="btn btn-sm" type="button" data-accion="cancelar" data-id="${r.id}">Cancelar reserva</button>
+        </div>` : ''}
+      </article>`).join('')
+      : `<p class="empty">${filtro.value ? 'No hay reservas para esa fecha.' : 'Todavía no hay reservas. Las que haga un Cliente aparecerán aquí.'}</p>`;
+  }
+
+  /* Franjas (fecha + hora + zona) que tienen reservas o están bloqueadas */
+  function franjas(){
+    const mapa = new Map();
+    const agregar = x => { const k = x.fecha + '|' + x.hora + '|' + x.zona; if(!mapa.has(k)) mapa.set(k, {fecha: x.fecha, hora: x.hora, zona: x.zona}); };
+    getReservas().filter(r => r.estado !== 'Cancelada').forEach(agregar);
+    getBloqueos().forEach(agregar);
+    let lista = [...mapa.values()].sort(orden);
+    if(filtro.value) lista = lista.filter(x => x.fecha === filtro.value);
+    return lista;
+  }
+  function renderFranjas(){
+    const lista = franjas();
+    $('listaFranjas').innerHTML = lista.length ? lista.map(x => {
+      const z = ZONAS.find(z => z.id === x.zona);
+      const ocupadas = personasEn(x.zona, x.fecha, x.hora);
+      const bloqueada = estaBloqueada(x.zona, x.fecha, x.hora);
+      const llena = ocupadas >= z.aforo;
+      const estado = bloqueada ? ['bloqueada', 'Bloqueada'] : llena ? ['llena', 'Lleno'] : ['ok', 'Disponible'];
+      return `<article class="franja ${llena ? 'llena' : ''}">
+        <div class="flex items-start justify-between gap-2">
+          <strong>${fmtFecha(x.fecha)} · ${x.hora} · ${z.n}</strong>
+          <span class="etiqueta ${estado[0]}">${estado[1]}</span>
+        </div>
+        <p>${ocupadas} de ${z.aforo} personas</p>
+        <div class="barra" role="progressbar" aria-label="Ocupación" aria-valuemin="0" aria-valuemax="${z.aforo}" aria-valuenow="${ocupadas}"><span style="width:${Math.min(100, ocupadas / z.aforo * 100)}%"></span></div>
+        <div class="mt-3">
+          <button class="btn ${bloqueada ? '' : 'amber'} btn-sm" type="button" data-accion="${bloqueada ? 'habilitar' : 'bloquear'}" data-f="${x.fecha}" data-h="${x.hora}" data-z="${x.zona}">${bloqueada ? 'Habilitar' : 'Bloquear'}</button>
+        </div>
+      </article>`;
+    }).join('') : `<p class="empty">No hay franjas con reservas ni bloqueos${filtro.value ? ' en esa fecha' : ''}.</p>`;
+  }
+  function renderTodo(){
+    $('notaAforo').textContent = (filtro.value ? 'Fecha: ' + fmtFecha(filtro.value) : 'Todas las fechas') + '. Aforo por zona: ' + ZONAS.map(z => `${z.n} ${z.aforo}`).join(', ') + ' personas.';
+    renderReservas();
+    renderFranjas();
+  }
+
+  /* Bloquea una franja; si ya tiene reservas, advierte antes de aplicar el cambio */
+  async function pedirBloqueo(zona, fecha, hora){
+    const n = activas(zona, fecha, hora).length;
+    if(n > 0){
+      const acepta = await confirmar('Esta franja ya tiene reservas',
+        `Hay ${n} ${n > 1 ? 'reservas' : 'reserva'} en esta franja. Se mantienen; solo se bloquean las nuevas solicitudes de los Clientes.`,
+        'Bloquear de todos modos');
+      if(!acepta) return false;
+    }
+    if(!bloquearFranja(zona, fecha, hora)){ toast('No se pudo guardar el bloqueo'); return false; }
+    toast('Franja bloqueada: los Clientes ya no la verán disponible');
+    return true;
+  }
+
+  /* Acciones sobre las reservas */
+  $('listaReservas').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-accion]');
+    if(!b) return;
+    const id = Number(b.dataset.id);
+    if(b.dataset.accion === 'atender'){
+      cambiarEstadoReserva(id, 'Atendida');
+      toast('Reserva marcada como atendida');
+    } else if(b.dataset.accion === 'cancelar'){
+      if(!(await confirmar('Cancelar reserva', 'Se cancelará la reserva y se liberará el cupo de esa franja.', 'Sí, cancelar'))) return;
+      cambiarEstadoReserva(id, 'Cancelada');
+      toast('Reserva cancelada');
+    }
+    renderTodo();
+  });
+
+  /* Acciones sobre las franjas */
+  $('listaFranjas').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-accion]');
+    if(!b) return;
+    const {f, h, z} = b.dataset;
+    if(b.dataset.accion === 'habilitar'){
+      habilitarFranja(z, f, h);
+      toast('Franja habilitada: los Clientes ya pueden reservarla');
+    } else if(!(await pedirBloqueo(z, f, h))) return;
+    renderTodo();
+  });
+
+  /* Filtro por fecha */
+  filtro.addEventListener('change', renderTodo);
+  $('btnTodas').addEventListener('click', () => { filtro.value = ''; renderTodo(); });
+
+  /* Bloquear una franja que todavía no tiene reservas */
+  $('bHora').innerHTML = '<option value="">Selecciona hora</option>' + HORAS.map(h => `<option>${h}</option>`).join('');
+  $('bZona').innerHTML = ZONAS.map(z => `<option value="${z.id}">${z.n}</option>`).join('');
+  $('bFecha').min = hoyISO;
+  $('formBloqueo').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fecha = $('bFecha').value, hora = $('bHora').value, zona = $('bZona').value;
+    $('e-bFecha').textContent = fecha ? '' : 'Selecciona una fecha.';
+    $('e-bHora').textContent = hora ? '' : 'Selecciona una hora.';
+    if(!fecha || !hora) return;
+    if(estaBloqueada(zona, fecha, hora)){ $('e-bHora').textContent = 'Esa franja ya está bloqueada.'; return; }
+    if(await pedirBloqueo(zona, fecha, hora)){ $('formBloqueo').reset(); renderTodo(); }
+  });
+
+  renderTodo();
+}
+
 
 /* ---------- 5. Arranque ---------- */
 const PAGINAS = {
@@ -678,9 +969,16 @@ const PAGINAS = {
   reservas: initReservas,
   login: initLogin,
   establecimiento: initEstablecimiento,
-  'carta-admin': initCartaAdmin
+  'carta-admin': initCartaAdmin,
+  agenda: initAgenda
 };
 
-initNav();
-const arrancar = PAGINAS[document.body.dataset.page];
-if(arrancar) arrancar();
+const pagina = document.body.dataset.page;
+if(PAGINAS_ADMIN.includes(pagina) && sessionStorage.getItem('admin') !== '1'){
+  location.replace('login.html');
+} else {
+  renderNav();
+  initNav();
+  const arrancar = PAGINAS[pagina];
+  if(arrancar) arrancar();
+}
