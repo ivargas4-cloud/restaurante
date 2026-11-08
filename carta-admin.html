@@ -17,12 +17,12 @@
   <!-- Catálogo editable: formulario de alta, filtros por categoría y listado generado por JS. -->
   <section class="panel" id="pMenu" aria-labelledby="hMenu">
     <div class="panel-header">
-      <h2 id="hMenu"><span class="n">1</span>Catálogo de platos</h2>
+      <h2 id="hMenu">Catálogo de platos</h2>
     </div>
 
     <!-- Formulario plegable para incorporar un plato y, opcionalmente, su fotografía. -->
     <details class="panel" style="margin-bottom:18px;padding:16px 24px">
-      <summary style="cursor:pointer;font-weight:700;color:var(--wine-d)">➕ Agregar nuevo plato</summary>
+      <summary class="resumen-bloqueo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Agregar nuevo plato</summary>
       <form id="formNuevoPlato" novalidate style="margin-top:16px">
         <div class="grid2">
           <div class="f">
@@ -60,11 +60,9 @@
 
     <div id="listaPlatos"></div>
 
-    <!-- Guarda disponibilidad, precios y fotografías pendientes del catálogo. -->
     <div class="form-actions">
       <button class="btn amber" type="button" id="btnGuardarMenu">Guardar cambios</button>
     </div>
-
     <div class="alert ok" id="alertaMenuOk" role="status" hidden>
       <span class="ck" aria-hidden="true">✓</span>
       <span>Carta actualizada correctamente</span>
@@ -72,6 +70,37 @@
     <div class="alert bad" id="alertaMenuErr" role="alert"></div>
   </section>
 </main>
+
+<dialog id="dlgEditar">
+  <form class="dlg dlg-editar" id="formEditar" novalidate>
+    <div class="foto-edit">
+      <img id="edImg" alt="">
+      <span id="edEmoji" class="foto-vacia" hidden>Sin foto</span>
+      <button class="btn-foto" type="button" id="btnFoto">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Editar foto
+      </button>
+      <input type="file" id="edFoto" accept="image/*" hidden>
+    </div>
+    <div class="dlg-cuerpo">
+      <h2 id="edTitulo">Editar plato</h2>
+      <p class="note" id="edCategoria"></p>
+      <div class="f">
+        <label for="edDesc">Descripción <span class="req">*</span></label>
+        <textarea class="ctl" id="edDesc" rows="3"></textarea>
+      </div>
+      <div class="f">
+        <label for="edPrecio">Precio <span class="req">*</span></label>
+        <input class="ctl" id="edPrecio" type="number" min="0" step="500">
+      </div>
+      <label class="chk"><input type="checkbox" id="edDisp"> Disponible</label>
+      <p class="err" id="edErr"></p>
+      <div class="dlg-acciones">
+        <button class="btn ghost" type="button" id="edCancelar">Cancelar</button>
+        <button class="btn amber" type="submit">Guardar cambios</button>
+      </div>
+    </div>
+  </form>
+</dialog>
 
 <div class="toast" id="toast" role="status"></div>
 <!-- Inicializa la gestión de la carta cuando data-page vale "carta-admin". -->

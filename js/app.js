@@ -54,10 +54,54 @@ const INFO_BASE = {
   telefono: '3001234567',
   horarios: 'Lunes - Viernes: 10:00 a. m. - 10:00 p. m.; Sábado: 10:00 a. m. - 11:00 p. m.; Domingo: 10:00 a. m. - 9:00 p. m.',
   descripcion: 'Buen Sabor es un restaurante de comida, postres y bebidas, donde buscamos ofrecer el mejor sabor en cada momento. Contamos con un ambiente familiar, ideal para compartir con familia, amigos y disfrutar un buen momento.',
-  servicios: ['wifi', 'domicilios', 'terraza']
+  servicios: ['wifi', 'domicilios', 'terraza', 'mascotas']
 };
 function leerInfo(){ return Object.assign({}, INFO_BASE, leerLS('infoEstablecimiento', {})); }
 
+/* ¿Está abierto ahora? Lee el texto de horarios y usa la hora de Colombia.
+   Devuelve null si no entiende el texto (entonces no se muestra el aviso). */
+function estadoHorario(texto, ahora = new Date()){
+  const DIAS = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  const NOMBRES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const sin = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const aMin = (h, m, ap) => ((+h % 12) + (ap === 'p' ? 12 : 0)) * 60 + +m;
+  const franjas = {};
+  texto.split(';').forEach(parte => {
+    const m = parte.match(/^(.*?):\s*(\d{1,2}):(\d{2})\s*([ap])\.?\s*m\.?\s*[-–a]+\s*(\d{1,2}):(\d{2})\s*([ap])\.?\s*m\.?/i);
+    if(!m) return;
+    const dias = DIAS.map((d, i) => sin(m[1]).includes(d) ? i : -1).filter(i => i >= 0);
+    if(!dias.length) return;
+    let lista = dias;
+    if(dias.length === 2 && /(-|–|\ba\b)/.test(m[1])){
+      lista = []; for(let d = dias[0]; ; d = (d + 1) % 7){ lista.push(d); if(d === dias[1]) break; }
+    }
+    const f = {ab: aMin(m[2], m[3], m[4].toLowerCase()), ce: aMin(m[5], m[6], m[7].toLowerCase()),
+               abTxt: `${m[2]}:${m[3]} ${m[4].toLowerCase()}. m.`, ceTxt: `${m[5]}:${m[6]} ${m[7].toLowerCase()}. m.`};
+    lista.forEach(d => franjas[d] = f);
+  });
+  if(!Object.keys(franjas).length) return null;
+
+  const p = new Intl.DateTimeFormat('en-US', {timeZone: 'America/Bogota', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false}).formatToParts(ahora);
+  const get = t => p.find(x => x.type === t).value;
+  const dia = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(get('weekday'));
+  const min = (+get('hour') % 24) * 60 + +get('minute');
+
+  const hoy = franjas[dia];
+  if(hoy){
+    const cierre = hoy.ce <= hoy.ab ? hoy.ce + 1440 : hoy.ce;
+    if(min >= hoy.ab && min < cierre) return {abierto: true, texto: `Abierto ahora · cierra a las ${hoy.ceTxt}`};
+  }
+  const ayer = franjas[(dia + 6) % 7];
+  if(ayer && ayer.ce <= ayer.ab && min < ayer.ce) return {abierto: true, texto: `Abierto ahora · cierra a las ${ayer.ceTxt}`};
+
+  for(let k = 0; k < 7; k++){
+    const d = (dia + k) % 7, f = franjas[d];
+    if(!f || (k === 0 && min >= f.ab)) continue;
+    const cuando = k === 0 ? 'hoy' : k === 1 ? 'mañana' : 'el ' + NOMBRES[d];
+    return {abierto: false, texto: `Cerrado ahora · abre ${cuando} a las ${f.abTxt}`};
+  }
+  return {abierto: false, texto: 'Cerrado ahora'};
+}
 /* Lee una imagen y la reduce (máx. 800 px) para que quepa en localStorage */
 function leerImagen(archivo, max = 800){
   return new Promise((resolve, reject) => {
@@ -91,42 +135,42 @@ const ICONOS = {
   postres: '<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="2"/><path d="M7.2 7.9 3 11v9c0 .6.4 1 1 1h16c.6 0 1-.4 1-1v-9c0-2-3-6-7-8l-3.6 2.6"/><path d="M16 13H3"/><path d="M16 17H3"/></svg>'
 };
 const CATS=[
- {n:'Entradas',i:ICONOS.entradas,c:'var(--c1)',items:[
-  {n:'Bruschetta clásica',d:'Pan artesanal con tomate y albahaca.',p:8500,e:'🥖',h:28,img:'img/bruscheta1.jpg',disp:true},
-  {n:'Ensalada César',d:'Lechuga fresca, pollo, crotones y aderezo.',p:10000,e:'🥗',h:100,img:'img/Ensalada-César-con-pollo1.jpg',disp:true},
-  {n:'Empanadas criollas',d:'Rellenas de carne y papa, con ají casero.',p:7000,e:'🥟',h:38,img:'img/empanadas cirollas1.jpg',disp:true},
-  {n:'Nachos con guacamole',d:'Totopos crujientes, guacamole y queso gratinado.',p:11000,e:'🥑',h:110,img:'img/nachos 1.jpg',disp:true},
-  {n:'Croquetas de jamón',d:'Seis croquetas doradas con salsa tártara.',p:9500,e:'🧆',h:32,img:'img/croquetas_de_jamon_caseras1.jpg',disp:true},
-  {n:'Sopa de tomate',d:'Cremosa, con albahaca fresca y pan tostado.',p:8000,e:'🍅',h:8,img:'img/sopa de romate.jpg',disp:true},
-  {n:'Alitas BBQ',d:'Alitas de pollo bañadas en salsa barbacoa.',p:12500,e:'🍗',h:22,img:'img/alittas bbq1.jpg',disp:true},
-  {n:'Patacones con hogao',d:'Plátano verde frito con hogao y queso rallado.',p:8000,e:'🍌',h:50,img:'img/patacones con hoga1.jpg',disp:true}]},
- {n:'Platos fuertes',i:ICONOS.platos,c:'var(--c2)',items:[
-  {n:'Bandeja paisa',d:'Frijoles, arroz, chicharrón, carne, huevo y plátano.',p:28000,e:'🍛',h:30,img:'img/bandeja-paisa-.jpg',disp:true},
-  {n:'Salmón a la plancha',d:'Con puré de papa y vegetales salteados.',p:34000,e:'🐟',h:15,img:'img/salmon.jpg',disp:true},
-  {n:'Pasta Alfredo con pollo',d:'Pasta cremosa con pollo y parmesano.',p:24000,e:'🍝',h:45,img:'img/pasta alfredo.jpg',disp:true},
-  {n:'Lomo de res al vino',d:'Lomo tierno en salsa de vino tinto y papas rústicas.',p:36000,e:'🥩',h:355,img:'img/lomo de res.jpg',disp:true},
-  {n:'Pollo a la parrilla',d:'Media pechuga marinada, arroz y ensalada fresca.',p:26000,e:'🍖',h:25,img:'img/pollo a la aprrilla.jpg',disp:true},
-  {n:'Arroz con mariscos',d:'Camarones, calamar y almejas en arroz sofrito.',p:32000,e:'🦐',h:12,img:'img/arroz de marisco.jpg',disp:true},
-  {n:'Churrasco con papas',d:'Corte de res a la brasa con papas a la francesa.',p:33000,e:'🥓',h:5,img:'img/churraascp.jpg',disp:true},
-  {n:'Lasaña de carne',d:'Capas de pasta, carne, bechamel y queso gratinado.',p:25000,e:'🧀',h:42,img:'img/lasaña.jpg',disp:true}]},
- {n:'Bebidas',i:ICONOS.bebidas,c:'var(--c3)',items:[
-  {n:'Limonada de coco',d:'Refrescante, con leche de coco y hielo.',p:9000,e:'🥥',h:190,img:'img/limonada-de-coco_9iu1.jpg',disp:true},
-  {n:'Jugo de lulo',d:'Natural, preparado en agua o en leche.',p:7000,e:'🍹',h:75,img:'img/jugo-lulo-1024x1024.jpg',disp:true},
+  {n:'Entradas',i:'<svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg>',c:'var(--c1)',items:[
+  {n:'Empanadas colombianas',d:'Rellenas de carne y papa, con ají casero.',p:7000,e:'🥟',h:38,img:'img/empanadas.jpg',disp:true},
+  {n:'Patacones con hogao',d:'Plátano verde frito con hogao y queso rallado.',p:8000,e:'🍌',h:50,img:'img/patacones.jpg',disp:true},
+  {n:'Arepa con queso',d:'Arepa de maíz asada con queso campesino derretido.',p:6000,e:'🌽',h:45,img:'img/arepa-queso.jpg',disp:true},
+  {n:'Chicharrón crocante',d:'Trozos de cerdo fritos, con limón y arepita.',p:9500,e:'🥓',h:25,img:'img/chicharron.jpg',disp:true},
+  {n:'Bolitas de yuca',d:'Fritas y rellenas de queso, con suero costeño.',p:7500,e:'🧀',h:42,img:'img/bolitas-yuca.jpg',disp:true},
+  {n:'Deditos de queso',d:'Palitos de masa con queso, fritos y dorados.',p:7000,e:'🧆',h:35,img:'img/deditos-queso.jpg',disp:true},
+  {n:'Chorizo santarrosano',d:'Chorizo a la parrilla con arepita y limón.',p:8500,e:'🌭',h:15,img:'img/chorizo.jpg',disp:true},
+  {n:'Caldo de costilla',d:'Caldo casero con papa, cilantro y arepa.',p:8000,e:'🍲',h:30,img:'img/caldo-costilla.jpg',disp:true}]},
+  {n:'Platos fuertes',i:'<svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',c:'var(--c2)',items:[
+  {n:'Bandeja paisa',d:'Frijoles, arroz, chicharrón, carne, huevo y plátano.',p:28000,e:'🍛',h:30,img:'img/bandeja-paisa.jpg',disp:true},
+  {n:'Ajiaco santafereño',d:'Sopa de tres papas con pollo, mazorca, alcaparras y crema.',p:26000,e:'🥣',h:45,img:'img/ajiaco.jpg',disp:true},
+  {n:'Sancocho de gallina',d:'Caldo con gallina, yuca, plátano y mazorca, con arroz.',p:25000,e:'🍲',h:35,img:'img/sancocho.jpg',disp:true},
+  {n:'Sobrebarriga criolla',d:'En salsa criolla, con arroz, papa y ensalada.',p:27000,e:'🥩',h:10,img:'img/sobrebarriga.jpg',disp:true},
+  {n:'Mojarra frita',d:'Con arroz de coco, patacón y ensalada fresca.',p:30000,e:'🐟',h:15,img:'img/mojarra.jpg',disp:true},
+  {n:'Lechona tolimense',d:'Cerdo relleno de arroz y arvejas, con arepa.',p:24000,e:'🍖',h:28,img:'img/lechona.jpg',disp:true},
+  {n:'Pollo guisado',d:'Pollo en salsa criolla, con arroz y papa.',p:23000,e:'🍗',h:22,img:'img/pollo-guisado.jpg',disp:true},
+  {n:'Carne asada con papa criolla',d:'Corte de res a la parrilla con papa criolla y ensalada.',p:29000,e:'🥓',h:5,img:'img/carne-asada.jpg',disp:true}]},
+  {n:'Bebidas',i:'<svg viewBox="0 0 24 24"><path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"/><path d="M5 8h14"/><path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0"/><path d="m12 8 1-6h2"/></svg>',c:'var(--c3)',items:[
+  {n:'Limonada de coco',d:'Refrescante, con leche de coco y hielo.',p:9000,e:'🥥',h:190,img:'img/limonada-coco.jpg',disp:true},
+  {n:'Jugo de lulo',d:'Natural, preparado en agua o en leche.',p:7000,e:'🍹',h:75,img:'img/jugo-lulo.jpg',disp:true},
   {n:'Café de origen',d:'Grano santandereano, servido caliente.',p:5000,e:'☕',h:25,img:'img/cafe.jpg',disp:true},
-  {n:'Limonada cerezada',d:'Limón, cerezas y un toque de menta.',p:8000,e:'🍒',h:350,img:'img/Limonada de cerezas.jpg',disp:true},
-  {n:'Jugo de mora',d:'Mora de Castilla natural, en agua o leche.',p:6500,e:'🫐',h:280,img:'img/receta-de-jugo-de-moras.jpg',disp:true},
-  {n:'Té frío de durazno',d:'Té negro infusionado con durazno y hielo.',p:6000,e:'🍑',h:20,img:'img/Te-durazno-file.jpg',disp:true},
-  {n:'Malteada de vainilla',d:'Helado de vainilla, leche y crema chantilly.',p:11000,e:'🥛',h:210,img:'img/malteada.jpg',disp:true},
-  {n:'Agua con gas',d:'Botella de 330 ml, bien fría.',p:4000,e:'💧',h:200,img:'img/agia con gas.jpg',disp:true}]},
- {n:'Postres',i:ICONOS.postres,c:'var(--c4)',items:[
-  {n:'Tiramisú',d:'Postre tradicional con café y mascarpone.',p:6500,e:'🍰',h:20,img:'img/tiramisu.jpg',disp:true},
-  {n:'Brownie con helado',d:'Brownie tibio de chocolate con helado de vainilla.',p:8000,e:'🍫',h:18,img:'img/bronie con helado.jpg',disp:true},
-  {n:'Flan de caramelo',d:'Suave y cremoso, bañado en caramelo casero.',p:6000,e:'🍮',h:35,img:'img/flan.jpg',disp:true},
-  {n:'Cheesecake de maracuyá',d:'Base de galleta y cobertura de maracuyá.',p:9000,e:'🥭',h:48,img:'img/-cheesecake-de-Maracuya.jpg',disp:true},
-  {n:'Tres leches',d:'Bizcocho húmedo con crema y canela.',p:7500,e:'🧁',h:340,img:'img/Tres Leches de Canela y Latte.jpg',disp:true},
-  {n:'Helado artesanal',d:'Tres bolas a elección: vainilla, mora o chocolate.',p:7000,e:'🍦',h:330,img:'img/helado.jpg',disp:true},
-  {n:'Arroz con leche',d:'Receta casera con canela y pasas.',p:5500,e:'🥣',h:40,img:'img/arroz_con_leche.jpg',disp:true},
-  {n:'Tarta de limón',d:'Masa crocante con crema de limón y merengue.',p:8000,e:'🍋',h:55,img:'img/tarta de limon.jpg',disp:true}]}
+  {n:'Jugo de mora',d:'Mora de Castilla natural, en agua o leche.',p:6500,e:'🫐',h:280,img:'img/jugo-mora.jpg',disp:true},
+  {n:'Jugo de maracuyá',d:'Natural, ácido y refrescante.',p:7000,e:'🥭',h:48,img:'img/jugo-maracuya.jpg',disp:true},
+  {n:'Agua de panela con limón',d:'Bebida tradicional, fría o caliente.',p:4500,e:'🍋',h:55,img:'img/aguapanela.jpg',disp:true},
+  {n:'Chocolate con queso',d:'Chocolate caliente santafereño con queso.',p:7000,e:'🍫',h:20,img:'img/chocolate.jpg',disp:true},
+  {n:'Avena fría',d:'Bebida casera de avena con canela.',p:6000,e:'🥛',h:210,img:'img/avena.jpg',disp:true}]},
+  {n:'Postres',i:'<svg viewBox="0 0 24 24"><path d="M16 13H3"/><path d="M16 17H3"/><path d="m7.2 7.9-3.388 2.5A2 2 0 0 0 3 12.01V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-8.654c0-2-2.44-6.026-6.44-8.026a1 1 0 0 0-1.082.057L10.4 5.6"/><circle cx="9" cy="7" r="2"/></svg>',c:'var(--c4)',items:[
+  {n:'Arroz con leche',d:'Receta casera con canela y pasas.',p:5500,e:'🥣',h:40,img:'img/arroz-leche.jpg',disp:true},
+  {n:'Natilla con buñuelos',d:'Natilla de canela con buñuelos calientes.',p:7500,e:'🍮',h:35,img:'img/natilla.jpg',disp:true},
+  {n:'Obleas con arequipe',d:'Obleas crocantes con arequipe y queso.',p:6000,e:'🍪',h:32,img:'img/obleas.jpg',disp:true},
+  {n:'Brevas con arequipe',d:'Brevas en almíbar con arequipe y queso.',p:7000,e:'🍯',h:28,img:'img/brevas.jpg',disp:true},
+  {n:'Postre de natas',d:'Dulce casero de natas con canela.',p:6500,e:'🍰',h:45,img:'img/natas.jpg',disp:true},
+  {n:'Cuajada con melao',d:'Cuajada fresca con miel de caña.',p:6500,e:'🧀',h:50,img:'img/cuajada.jpg',disp:true},
+  {n:'Tres leches',d:'Bizcocho húmedo con crema y canela.',p:7500,e:'🧁',h:340,img:'img/tres-leches.jpg',disp:true},
+  {n:'Helado de coco',d:'Helado artesanal de coco con coco rallado.',p:7000,e:'🍦',h:330,img:'img/helado-coco.jpg',disp:true}]}
 ];
 
 /* Aplica a CATS lo que el administrador guardó en el navegador:
@@ -143,15 +187,16 @@ const CATS=[
     if(c.p !== undefined) item.p = c.p;
     if(c.disp !== undefined) item.disp = c.disp;
     if(c.img) item.img = c.img;
+    if(c.d !== undefined) item.d = c.d;
   }));
 })();
 
 /* ---------- Reservas y bloqueos (los comparten "Reserva de mesa" y "Agenda y aforo") ---------- */
 /* Zonas del restaurante y su aforo (personas que caben en cada una) */
 const ZONAS = [
-  {id:'salon',   n:'Salón',   i:'🍽️', aforo:40},
-  {id:'terraza', n:'Terraza', i:'🌿', aforo:20},
-  {id:'barra',   n:'Barra',   i:'🥂', aforo:8}
+  {id:'salon',   n:'Salón',   i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>', aforo:40},
+  {id:'terraza', n:'Terraza', i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12a10.06 10.06 1 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/></svg>', aforo:20},
+  {id:'barra',   n:'Barra',   i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>', aforo:8}
 ];
 /* Franjas horarias: de 12:00 a 21:00, cada 30 minutos */
 const HORAS = [];
@@ -190,7 +235,7 @@ function habilitarFranja(zona, fecha, hora){
 function initNav(){
   /* Botón "Iniciar Sesión" (páginas públicas) */
   const login = $('btnLogin');
-  if(login) login.addEventListener('click', () => { location.href = 'login.html'; });
+  if(login) login.addEventListener('click', () => { location.href = sessionStorage.getItem('admin') === '1' ? 'establecimiento.html' : 'login.html'; });
 
     /* Botón ☰ del menú en pantallas pequeñas */
   const toggle = $('navToggle');
@@ -251,33 +296,28 @@ function renderNav(){
     return;
   }
   const admin = PAGINAS_ADMIN.includes(pagina);
-  const enlace = (id, href, texto) => pagina === id
-    ? `<li><a href="#" aria-current="page">${texto}</a></li>`
-    : `<li><a href="${href}">${texto}</a></li>`;
-  const enlaceAdmin = (id, href, texto) => pagina === id
-    ? `<li><a href="${href}" aria-current="page" class="active">${texto}</a></li>`
+  const item = (id, href, texto) => pagina === id
+    ? `<li><a href="${href}" aria-current="page">${texto}</a></li>`
     : `<li><a href="${href}">${texto}</a></li>`;
 
-  const enlaces = enlace('inicio', 'inicio.html', 'Inicio') + enlace('menu', 'menu.html', 'Menú')
-    + enlace('reservas', 'index.html', 'Reservas') + '<li><a href="inicio.html#t-cont">Contacto</a></li>';
-  const menuAdmin = `<li class="dropdown">
-        <button class="btn-dropdown" type="button" id="btnAdminNav" aria-haspopup="true" aria-expanded="false">Administración ▾</button>
-        <ul class="dropdown-menu" id="adminMenu" hidden>
-          ${enlaceAdmin('agenda', 'agenda.html', '🗓️ Agenda y aforo')}
-          ${enlaceAdmin('carta-admin', 'carta-admin.html', '🍽️ Carta gastronómica')}
-          ${enlaceAdmin('establecimiento', 'establecimiento.html', '🏪 Información del establecimiento')}
-        </ul>
-      </li>`;
+  /* Cliente: Inicio, Menú, Reservas, Contacto + "Iniciar sesión".
+     Administrador: solo sus opciones, con otro color y una etiqueta "Administración". */
+  const enlaces = admin
+    ? item('agenda', 'agenda.html', 'Agenda y aforo') + item('carta-admin', 'carta-admin.html', 'Carta')
+      + item('establecimiento', 'establecimiento.html', 'Establecimiento') + '<li><a href="inicio.html">Ver sitio</a></li>'
+    : item('inicio', 'inicio.html', 'Inicio') + item('menu', 'menu.html', 'Menú')
+      + item('reservas', 'index.html', 'Reservas') + '<li><a href="inicio.html#t-cont">Contacto</a></li>';
+  const iconoUsuario = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>';
   const sesion = admin
     ? `<div class="dropdown">
-        <button class="btn-dropdown login" type="button" id="btnUserMenu" aria-haspopup="true" aria-expanded="false">👤 Administrador ▾</button>
+        <button class="btn-dropdown login" type="button" id="btnUserMenu" aria-haspopup="true" aria-expanded="false">${iconoUsuario}Administrador ▾</button>
         <ul class="dropdown-menu" id="userMenu" hidden><li><a href="#" id="btnLogout">Cerrar sesión</a></li></ul>
       </div>`
-    : '<button class="btn login" type="button" id="btnLogin">Administrador</button>';
+    : `<button class="btn login" type="button" id="btnLogin">${sessionStorage.getItem('admin') === '1' ? 'Volver al panel' : 'Iniciar sesión'}</button>`;
 
-  header.innerHTML = `<nav class="nav" aria-label="Principal">${marca}
+  header.innerHTML = `<nav class="nav${admin ? ' nav-admin' : ''}" aria-label="${admin ? 'Administración' : 'Principal'}">${marca}${admin ? '<span class="badge-admin">Administración</span>' : ''}
     <button class="nav-toggle" type="button" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Abrir o cerrar el menú">☰</button>
-    <div class="nav-menu" id="navMenu"><ul>${enlaces}${admin ? menuAdmin : ''}</ul>${sesion}</div>
+    <div class="nav-menu" id="navMenu"><ul>${enlaces}</ul>${sesion}</div>
   </nav>`;
 }
 
@@ -292,27 +332,56 @@ function initInicio(){
   const tel = q('a[href^="tel:"]');
   tel.textContent = info.telefono.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
   tel.href = 'tel:+57' + info.telefono.replace(/\D/g, '');
+  q('#btnLlamar').href = tel.href;
+  q('#btnWsp').href = 'https://wa.me/57' + info.telefono.replace(/\D/g, '');
   q('.hrs').innerHTML = info.horarios.split(';').map(t => {
     const m = t.trim().match(/^(.*?):\s*(\d.*)$/);
     return m ? `<li><b>${esc(m[1])}</b><span>${esc(m[2])}</span></li>` : `<li><b>${esc(t.trim())}</b></li>`;
   }).join('');
+
+  /* Aviso "Abierto ahora / Cerrado": se actualiza cada minuto */
+  const estadoEl = q('#estadoAbierto');
+   /* Marca en la lista de horarios la fila del día de hoy (hora de Colombia) */
+  const marcarHoy = () => {
+    const DIAS = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+    const sin = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const nombreHoy = new Intl.DateTimeFormat('en-US', {timeZone: 'America/Bogota', weekday: 'short'}).format(new Date());
+    const hoy = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(nombreHoy);
+    document.querySelectorAll('.hrs li').forEach(li => {
+      const txt = sin(li.querySelector('b').textContent);
+      const dias = DIAS.map((d, i) => txt.includes(d) ? i : -1).filter(i => i >= 0);
+      let lista = dias;
+      if(dias.length === 2 && /(-|–|\ba\b)/.test(txt)){
+        lista = []; for(let d = dias[0]; ; d = (d + 1) % 7){ lista.push(d); if(d === dias[1]) break; }
+      }
+      li.classList.toggle('hoy', lista.includes(hoy));
+    });
+  };
+  const pintarEstado = () => {
+    marcarHoy();
+    const e = estadoHorario(info.horarios);
+    estadoEl.hidden = !e;
+    if(e){ estadoEl.textContent = e.texto; estadoEl.className = 'estado-abierto ' + (e.abierto ? 'abierto' : 'cerrado'); }
+  };
+  pintarEstado();
+  setInterval(pintarEstado, 60000);
   q('.direccion').textContent = info.direccion;
   q('a.mapa svg').setAttribute('preserveAspectRatio', 'xMidYMid slice');
   q('a.mapa').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(info.direccion);
   document.querySelectorAll('.chips li').forEach(li => {
     const txt = li.textContent.trim().toLowerCase();
-    const clave = ['wifi', 'domicilios', 'terraza'].find(c => txt.includes(c));
+    const clave = [['wifi','wifi'], ['domicilios','domicilios'], ['terraza','terraza'], ['pet','mascotas']].find(([t]) => txt.includes(t))?.[1];
     li.style.display = (!clave || info.servicios.includes(clave)) ? '' : 'none';
   });
   
   /* img: ruta de una foto real (ej. 'img/salon.jpg'). Si está vacío se muestra el emoji. */
-  const SLIDES=[
-    {t:'Fachada del restaurante',e:'🏠',h:10,img:'img/fachada.jpg'},
-    {t:'Salón principal',e:'🍽️',h:30,img:'img/salon.jpg'},
-    {t:'Terraza',e:'🌿',h:190,img:'img/terraza.jpg'},
-    {t:'Barra',e:'🥂',h:340,img:'img/barra.jpg'},
-    {t:'Plato estrella de la casa',e:'🍛',h:40,img:'img/imagen de foto contactp.jpg'},
-    {t:'Ambiente familiar',e:'👨‍👩‍👧',h:100,img:'img/familia.jpg'}
+  const SLIDES = [
+    {t:'Mesa servida',  e:'🍽️', h:30,  img:'img/galeria-1.jpg'},
+    {t:'Nuestro salón', e:'🪑', h:20,  img:'img/galeria-2.jpg'},
+    {t:'Terraza',       e:'🌿', h:110, img:'img/galeria-3.jpg'},
+    {t:'La barra',      e:'☕', h:35,  img:'img/galeria-4.jpg'},
+    {t:'Fachada',       e:'🏠', h:15,  img:'img/galeria-5.jpg'},
+    {t:'Postres',       e:'🍰', h:45,  img:'img/galeria-6.jpg'}
   ];
 
   const fotosGuardadas = leerLS('infoGaleria', []);
@@ -363,7 +432,7 @@ function initInicio(){
 /* ===== Carta gastronómica (menu.html): vista del Cliente ===== */
 function initMenu(){
   const fmt = p => '$ ' + p.toLocaleString('es-CO');
-  const pic = x => x.img ? `<img src="${x.img}" alt="${esc(x.n)}">` : `<span aria-hidden="true">${x.e}</span>`;
+  const pic = x => x.img ? `<img src="${x.img}" alt="${esc(x.n)}" onerror="this.outerHTML='<span aria-hidden=&quot;true&quot;>${x.e}</span>'">` : `<span aria-hidden="true">${x.e}</span>`;
   let activa = 0;
 
   $('cats').innerHTML = CATS.map((c,k) => `<button class="cat" type="button" style="--cat:${c.c}" data-k="${k}" aria-pressed="false"><span class="ci" aria-hidden="true">${c.i}</span>${c.n}</button>`).join('');
@@ -373,8 +442,8 @@ function initMenu(){
     $('cards').className = 'cards'; void $('cards').offsetWidth; $('cards').className = 'cards fade';
     $('cards').innerHTML = lista.length ? lista.map(({x,c,k,j}, i) => `<article class="card" style="--cat:${c.c};animation-delay:${Math.min(i,12)*.05}s">
       <div class="img" style="${bg(x.h)}">${pic(x)}</div>
-      <h3>${esc(x.n)}</h3><p class="desc">${esc(x.d)}</p><p class="price">${fmt(x.p)}</p>
-      <button class="btn ghost" type="button" data-k="${k}" data-j="${j}">Ver imagen</button></article>`).join('') : `<p class="empty">${vacio}</p>`;
+      <h3>${esc(x.n)}</h3><p class="price">${fmt(x.p)}</p>
+      <button class="btn ghost" type="button" data-k="${k}" data-j="${j}">Ver detalle</button></article>`).join('') : `<p class="empty">${vacio}</p>`;
   }
 
   function actualizarContinuar(){
@@ -393,7 +462,8 @@ function initMenu(){
 
   $('cats').addEventListener('click', e => { const b = e.target.closest('.cat'); if(b) mostrarCategoria(+b.dataset.k); });
   $('cards').addEventListener('click', e => {
-    const b = e.target.closest('button[data-k]'); if(!b) return;
+    const b = e.target.closest('button[data-k]') || (e.target.closest('.img') && e.target.closest('.card').querySelector('button[data-k]'));
+    if(!b) return;
     const x = CATS[b.dataset.k].items[b.dataset.j];
     $('dimg').setAttribute('style', bg(x.h)); $('dimg').innerHTML = pic(x);
     $('dn').textContent = x.n; $('dd').textContent = x.d; $('dp').textContent = fmt(x.p);
@@ -656,13 +726,9 @@ function initEstablecimiento(){
 /* ===== Gestionar carta gastronómica (carta-admin.html) ===== */
 function initCartaAdmin(){
   const catsFilter = $('catsFilter'), listaPlatos = $('listaPlatos');
-  const alertaOk = $('alertaMenuOk'), alertaErr = $('alertaMenuErr');
   const formNuevo = $('formNuevoPlato'), npCategoria = $('npCategoria');
   let categoriaActiva = 'todas';
-  const fotosPendientes = {};   // fotos elegidas que aún no se han guardado
-
-  const mostrarError = t => { alertaErr.textContent = t; alertaErr.classList.add('show'); };
-  const ocultarAlertas = () => { alertaOk.hidden = true; alertaErr.classList.remove('show'); };
+  const fmt = p => '$ ' + p.toLocaleString('es-CO');
 
   /* Filtro por categoría */
   function renderFiltro(){
@@ -677,90 +743,88 @@ function initCartaAdmin(){
     renderLista();
   });
 
-  /* Lista de platos con precio, disponibilidad y foto editables */
+   /* Lista de platos: foto, nombre, precio, estado y botón Editar */
   function renderLista(){
     const categorias = categoriaActiva === 'todas' ? CATS : CATS.filter(c => c.n === categoriaActiva);
     listaPlatos.innerHTML = categorias.map(cat => `
       <div class="cat-group">
         <h3>${cat.n}</h3>
         ${cat.items.map((item, idx) => `
-          <div class="plato-row">
+          <div class="plato-row" data-cat="${cat.n}" data-idx="${idx}">
             <div class="nombre">
-              ${item.img ? `<img src="${item.img}" alt="" class="plato-thumb">` : ''}
-              <span>${item.e} ${esc(item.n)}</span>
-              <input type="file" accept="image/*" class="plato-foto-input" data-cat="${cat.n}" data-idx="${idx}" aria-label="Cambiar foto de ${esc(item.n)}">
+              ${item.img ? `<img src="${item.img}" alt="" class="plato-thumb">` : `<span class="plato-thumb sin-foto" aria-hidden="true"></span>`}
+              <span>${esc(item.n)}</span>
             </div>
-            <input class="ctl" type="number" min="0" step="500" value="${item.p}" data-cat="${cat.n}" data-idx="${idx}" data-field="precio" aria-label="Precio de ${esc(item.n)}">
-            <label class="chk">
-              <input type="checkbox" ${item.disp ? 'checked' : ''} data-cat="${cat.n}" data-idx="${idx}" data-field="disp" aria-label="Disponible: ${esc(item.n)}">
-              Disponible
-            </label>
+            <span class="precio-fila">${fmt(item.p)}</span>
+            <span class="etiqueta ${item.disp ? 'ok' : 'bloqueada'}">${item.disp ? 'Disponible' : 'Agotado'}</span>
+            <button class="btn btn-sm" type="button" data-editar>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Editar
+            </button>
           </div>`).join('')}
       </div>`).join('');
   }
 
-  /* Vista previa inmediata al elegir una foto nueva para un plato existente */
-  listaPlatos.addEventListener('change', async e => {
-    const input = e.target.closest('.plato-foto-input');
-    if(!input || !input.files[0]) return;
+  /* Ventana "Editar plato" */
+  const dlg = $('dlgEditar'), edImg = $('edImg'), edEmoji = $('edEmoji'), edErr = $('edErr');
+  let platoEnEdicion = null, fotoNueva = null;
+
+  function mostrarFoto(src){
+    edImg.hidden = !src; edEmoji.hidden = !!src;
+    if(src) edImg.src = src;
+  }
+  listaPlatos.addEventListener('click', e => {
+    const fila = e.target.closest('.plato-row');
+    if(!fila) return;
+    const cat = CATS.find(c => c.n === fila.dataset.cat);
+    platoEnEdicion = {cat, item: cat.items[Number(fila.dataset.idx)]};
+    fotoNueva = null;
+    const it = platoEnEdicion.item;
+    $('edTitulo').textContent = it.n;
+    $('edCategoria').textContent = cat.n;
+    $('edDesc').value = it.d || '';
+    $('edPrecio').value = it.p;
+    $('edDisp').checked = it.disp;
+    edErr.textContent = '';
+    mostrarFoto(it.img);
+    dlg.showModal();
+  });
+  dlg.addEventListener('click', e => { if(e.target === dlg) dlg.close(); });
+  $('edCancelar').addEventListener('click', () => dlg.close());
+  $('btnFoto').addEventListener('click', () => $('edFoto').click());
+
+  /* Vista previa inmediata al elegir una foto nueva */
+  $('edFoto').addEventListener('change', async e => {
+    const archivo = e.target.files[0];
+    if(!archivo) return;
     try{
-      const base64 = await leerImagen(input.files[0]);
-      fotosPendientes[input.dataset.cat + '|' + input.dataset.idx] = base64;
-      const fila = input.closest('.plato-row');
-      let thumb = fila.querySelector('.plato-thumb');
-      if(!thumb){
-        thumb = document.createElement('img');
-        thumb.className = 'plato-thumb';
-        thumb.alt = '';
-        fila.querySelector('.nombre').prepend(thumb);
-      }
-      thumb.src = base64;
+      fotoNueva = await leerImagen(archivo);
+      mostrarFoto(fotoNueva);
+      edErr.textContent = '';
     }catch(err){
-      mostrarError('No se pudo leer la imagen. Prueba con otra.');
+      edErr.textContent = 'No se pudo leer la imagen. Prueba con otra.';
     }
+    e.target.value = '';
   });
 
-  /* "Guardar cambios": valida precios, actualiza CATS y guarda en el navegador */
-  $('btnGuardarMenu').addEventListener('click', () => {
-    ocultarAlertas();
+  /* "Guardar cambios": valida y guarda en el navegador */
+  $('formEditar').addEventListener('submit', e => {
+    e.preventDefault();
+    const desc = $('edDesc').value.trim(), precioTxt = $('edPrecio').value.trim(), precio = Number(precioTxt);
+    if(desc === ''){ edErr.textContent = 'La descripción es obligatoria.'; return; }
+    if(precioTxt === '' || isNaN(precio) || precio < 0){ edErr.textContent = 'Ingresa un precio válido.'; return; }
 
-    let hayError = false;
-    listaPlatos.querySelectorAll('input[data-field="precio"]').forEach(input => {
-      const valor = Number(input.value);
-      if(input.value.trim() === '' || isNaN(valor) || valor < 0){
-        input.setAttribute('aria-invalid', 'true');
-        hayError = true;
-      } else {
-        input.removeAttribute('aria-invalid');
-      }
-    });
-    if(hayError){
-      mostrarError('Hay precios inválidos. Revisa los campos marcados en rojo.');
-      return;
-    }
-
+    const {cat, item} = platoEnEdicion;
     const overrides = leerLS('menuOverrides', {});
-    listaPlatos.querySelectorAll('.plato-row').forEach(fila => {
-      const inputPrecio = fila.querySelector('input[data-field="precio"]');
-      const inputDisp = fila.querySelector('input[data-field="disp"]');
-      const catNombre = inputPrecio.dataset.cat;
-      const idx = Number(inputPrecio.dataset.idx);
-      const item = CATS.find(c => c.n === catNombre).items[idx];
-
-      item.p = Number(inputPrecio.value);
-      item.disp = inputDisp.checked;
-      const foto = fotosPendientes[catNombre + '|' + idx];
-      if(foto) item.img = foto;
-
-      overrides[catNombre + '|' + item.n] = {p: item.p, disp: item.disp, img: item.img};
-    });
-
+    overrides[cat.n + '|' + item.n] = {p: precio, disp: $('edDisp').checked, img: fotoNueva || item.img, d: desc};
     if(!guardarLS('menuOverrides', overrides)){
-      mostrarError('No se pudo guardar: el navegador se quedó sin espacio. Usa fotos más pequeñas.');
+      edErr.textContent = 'No se pudo guardar: el navegador se quedó sin espacio. Usa una foto más pequeña.';
       return;
     }
-    Object.keys(fotosPendientes).forEach(k => delete fotosPendientes[k]);
-    alertaOk.hidden = false;
+    item.p = precio; item.disp = $('edDisp').checked; item.d = desc;
+    if(fotoNueva) item.img = fotoNueva;
+    dlg.close();
+    renderLista();
+    toast('Plato actualizado');
   });
 
   /* Agregar nuevo plato */

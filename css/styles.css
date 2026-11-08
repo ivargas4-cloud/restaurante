@@ -368,4 +368,125 @@ body[data-page="menu"] .card .btn:hover{background:var(--amber);color:#3a2300}
 
 /* El mapa ocupa todo el espacio libre de la tarjeta Dirección */
 .dir .mapa{flex:1;min-height:170px}
-.dir .mapa svg{flex:1;height:auto;min-height:0}
+.dir .mapa svg{flex:1;height:0;min-height:200px}
+
+/* ---------- 11. Inicio: galería principal con nombre y banner de reserva ---------- */
+body[data-page="inicio"] .galeria{padding:12px}
+.galeria .pic{height:clamp(300px,40vw,520px)}
+.banner{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:48px 32px 28px;color:#fff;border-radius:0 0 12px 12px;pointer-events:none;background:linear-gradient(to top,rgba(30,10,5,.88) 15%,rgba(30,10,5,0))}
+.banner h1{margin:0;color:#fff;font-size:clamp(40px,7vw,76px);line-height:1;text-shadow:0 3px 14px rgba(0,0,0,.5)}
+.banner p{margin:6px 0 16px;font-size:clamp(15px,2vw,20px);color:#fff}
+.banner-acc{display:flex;gap:12px;flex-wrap:wrap}
+.banner-acc .btn{pointer-events:auto;display:inline-block;text-decoration:none;padding:14px 26px;font-size:17px}
+.galeria .nv{top:calc(40% - 20px)}
+@media(max-width:700px){.banner{padding:36px 18px 18px}.banner-acc .btn{padding:12px 18px;font-size:15px}}
+
+/* Debajo de la galería: Información arriba, luego Horarios y Contacto junto a Dirección */
+@media(min-width:701px){
+  body[data-page="inicio"] .grid{grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr}
+  body[data-page="inicio"] .grid>.col:last-child{grid-column:auto}
+  body[data-page="inicio"] .grid>.col{display:contents}
+  body[data-page="inicio"] .grid>.col:first-child>.card:first-child{grid-column:1/-1}
+  body[data-page="inicio"] .grid>.col:last-child>.card:first-child{grid-column:1;grid-row:2}
+  body[data-page="inicio"] .grid>.col:first-child>.card:last-child{grid-column:1;grid-row:3}
+  body[data-page="inicio"] .grid>.col:last-child>.card:last-child{grid-column:2;grid-row:2/4}
+}
+
+.chips{justify-content:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* ---------- 12. Carta: tarjetas simples y ventana de detalle grande ---------- */
+body[data-page="menu"] .card .price{margin:2px 0 8px}
+body[data-page="menu"] .card .btn{margin-top:auto}
+body[data-page="menu"] dialog{max-width:min(760px,calc(1.5 * (92vh - 240px)));max-height:92vh}
+body[data-page="menu"] .dlg{padding:0 0 26px}
+body[data-page="menu"] .dlg .img{border-radius:0;margin:0 0 20px;width:100%;aspect-ratio:3/2;height:auto;font-size:140px}
+body[data-page="menu"] .dlg h2{font-size:clamp(26px,4vw,34px);margin:0 28px 8px}
+body[data-page="menu"] .dlg .desc{font-size:18px;margin:0 28px 14px}
+body[data-page="menu"] .dlg .price{font-size:26px;color:var(--wine-d);margin:0 28px 20px}
+body[data-page="menu"] .dlg .btn{width:calc(100% - 56px);margin:0 28px}
+
+.cat .ci svg{stroke:var(--wine)}
+.cat:hover,.cat[aria-pressed="true"]{border-color:var(--wine)}
+.cat[aria-pressed="true"]{background:color-mix(in srgb,var(--wine) 10%,var(--card));box-shadow:0 0 0 4px color-mix(in srgb,var(--wine) 20%,transparent)}
+
+/* ---------- 13. Barra del administrador (distinta a la del cliente) ---------- */
+.nav-admin{background:linear-gradient(135deg,#3a0b11,#6b1620);box-shadow:0 10px 26px rgba(58,11,17,.35)}
+.nav-admin .brand{margin-right:0}
+.nav-admin .nav-menu{margin-left:auto}
+.badge-admin{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--amber);color:#3a2300;padding:4px 12px;border-radius:999px;margin-left:4px}
+.btn-dropdown svg{width:18px;height:18px;margin-right:8px;vertical-align:-3px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:900px){.nav-admin .nav-menu{margin-left:0}}
+.nav-admin a,.nav-admin .btn-dropdown{font-size:17px}
+.nav-admin a{padding:10px 13px}
+.nav-admin .nav-menu,.nav-admin .nav-menu > ul{gap:6px}
+
+/* Fotos de la carta en 3:2 (igual que las fotos) y microinteracción: la imagen "salta" al pasar el cursor */
+body[data-page="menu"] .card .img{aspect-ratio:3/2;cursor:pointer}
+body[data-page="menu"] .card .img img{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+body[data-page="menu"] .card .img:hover img{transform:scale(1.1)}
+
+/*Icono lapiz*/
+.btn .ico{width:18px;height:18px;margin-right:8px;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn:disabled .ico{stroke:var(--wine-d)}
+
+/* Agenda: filtro general y microinteracciones */
+.filtro-agenda{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 20px;margin-bottom:22px;box-shadow:0 1px 3px rgba(43,20,16,.05)}
+.filtro-agenda .ico{width:22px;height:22px;margin-bottom:14px;fill:none;stroke:var(--wine-d);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.filtro-agenda .f{margin:0}
+.reserva,.franja{transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,border-color .25s}
+.reserva:hover,.franja:hover{transform:translateY(-4px);border-color:var(--amber);box-shadow:0 12px 24px rgba(163,22,33,.14)}
+.resumen-bloqueo{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--wine-d);cursor:pointer;list-style:none}
+.resumen-bloqueo::-webkit-details-marker{display:none}
+.resumen-bloqueo .ico{width:20px;height:20px;fill:none;stroke:var(--wine-d);stroke-width:2.4;stroke-linecap:round;transition:transform .25s}
+details[open] .resumen-bloqueo .ico{transform:rotate(45deg)}
+.resumen-bloqueo:hover{color:var(--wine)}
+
+/* Carta (admin): lista simple + ventana Editar plato */
+.plato-row{grid-template-columns:1fr 110px 120px auto;cursor:pointer;border-radius:12px;padding:10px 12px;transition:background .2s}
+.plato-row:hover{background:var(--amber-s)}
+.plato-thumb{width:56px;height:56px;border-radius:12px}
+.plato-thumb.sin-foto{display:inline-block;background:var(--dis)}
+.precio-fila{font-weight:700;color:var(--wine-d)}
+@media(max-width:700px){.plato-row{grid-template-columns:1fr auto}}
+body[data-page="carta-admin"] dialog{max-width:560px;max-height:94vh}
+.dlg-editar{padding:0}
+.dlg-cuerpo{padding:22px 28px 26px}
+.dlg-cuerpo h2{margin:0}
+.dlg-cuerpo .note{margin:2px 0 16px}
+.foto-edit{position:relative;aspect-ratio:3/2;background:var(--dis);overflow:hidden}
+.foto-edit img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-vacia{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:600}
+.btn-foto{position:absolute;left:50%;top:50%;transform:translate(-50%,-40%);z-index:2;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 20px;background:var(--wine);color:#fff;font:inherit;font-weight:700;cursor:pointer;opacity:0;transition:opacity .25s,transform .25s cubic-bezier(.34,1.56,.64,1)}
+.foto-edit::after{content:"";position:absolute;inset:0;background:rgba(43,20,16,.35);opacity:0;transition:opacity .25s;pointer-events:none}
+.foto-edit:hover::after,.foto-edit:focus-within::after{opacity:1}
+.foto-edit:hover .btn-foto,.btn-foto:focus-visible{opacity:1;transform:translate(-50%,-50%)}
+.btn-foto .ico{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(hover:none){.btn-foto{opacity:1;top:auto;bottom:12px;transform:translateX(-50%)}}
+
+/* Reserva: íconos de zonas y paso 3 como tarjeta */
+.z .zi{display:block;line-height:0;color:var(--wine-d);margin-bottom:6px}
+.z .zi svg{width:32px;height:32px}
+.z input:checked+span .zi{color:#fff}
+.z input:disabled+span .zi{color:var(--muted)}
+.s3{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--amber);border-radius:20px;padding:24px;box-shadow:0 1px 3px rgba(43,20,16,.05),0 14px 30px rgba(163,22,33,.08)}
+.row3 .btn{min-width:0;width:100%}
+
+/* Inicio: botones de contacto */
+.acciones-contacto{display:grid!important;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.datos .acciones-contacto a{text-decoration:none;color:inherit;justify-content:center}
+.datos .acciones-contacto .btn:not(.amber){color:#fff}
+.acciones-contacto .btn{display:inline-flex;align-items:center;justify-content:center}
+.redes .sig{font-weight:600;color:var(--muted);margin-right:4px}
+
+/* Aviso Abierto ahora / Cerrado */
+.estado-abierto{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:6px 14px;border-radius:999px;font-size:14px;font-weight:700}
+.estado-abierto[hidden]{display:none}
+.estado-abierto::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.estado-abierto.abierto{background:color-mix(in srgb,var(--ok) 16%,var(--card));color:var(--ok)}
+.estado-abierto.cerrado{background:color-mix(in srgb,var(--err) 12%,var(--card));color:var(--err)}
+
+/* Horarios: resalta el día de hoy */
+.hrs li{padding:8px 12px;margin:-8px -12px;border-radius:12px}
+.hrs li.hoy{background:var(--amber-s)}
+.hrs li.hoy b{color:var(--wine-d)}
+.hrs li.hoy b::after{content:"Hoy";margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--wine);color:#fff;font-size:12px;font-weight:700;vertical-align:1px}

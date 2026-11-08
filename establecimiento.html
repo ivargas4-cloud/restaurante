@@ -18,8 +18,8 @@
   <!-- Formulario de información: inicia bloqueado y se habilita con "Editar información". -->
   <section class="panel" id="p1" aria-labelledby="h2s">
     <div class="panel-header">
-      <h2 id="h2s"><span class="n">1</span>Información del establecimiento</h2>
-      <button class="btn" type="button" id="btnEditar">✏️ Editar información</button>
+      <h2 id="h2s">Información del establecimiento</h2>
+      <button class="btn" type="button" id="btnEditar"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Editar información</button>
     </div>
 
     <form id="formInfo" novalidate>
@@ -57,6 +57,7 @@
           <label class="chk"><input type="checkbox" id="svcWifi" name="servicios" value="wifi"> Wifi</label>
           <label class="chk"><input type="checkbox" id="svcDomicilios" name="servicios" value="domicilios"> Domicilios</label>
           <label class="chk"><input type="checkbox" id="svcTerraza" name="servicios" value="terraza"> Terraza</label>
+          <label class="chk"><input type="checkbox" id="svcMascotas" name="servicios" value="mascotas"> Pet friendly</label>
         </fieldset>
         <div class="f">
           <label for="galeria">Galería de imágenes</label>
@@ -72,16 +73,12 @@
         <button class="btn amber" type="submit" id="btnGuardar" disabled>Guardar cambios</button>
       </div>
     </form>
-  </section>
-
-  <!-- Región de estado que anuncia si la actualización se guardó correctamente. -->
-  <section class="panel" id="p2" aria-labelledby="h3s">
-    <h2 id="h3s"><span class="n">2</span>Confirmación</h2>
     <div class="alert ok" id="alertaOk" role="status" hidden>
       <span class="ck" aria-hidden="true">✓</span>
       <span id="msgOk">Actualización exitosa</span>
     </div>
   </section>
+
 </main>
 
 <div class="toast" id="toast" role="status"></div>

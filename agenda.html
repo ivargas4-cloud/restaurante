@@ -18,18 +18,18 @@
 <main>
   <h1>Agenda y aforo</h1>
 
+  <div class="filtro-agenda">
+  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+  <div class="f">
+    <label for="filtroFecha">Filtrar toda la agenda por fecha</label>
+    <input class="ctl" type="date" id="filtroFecha">
+  </div>
+  <button class="btn" type="button" id="btnTodas">Ver todas</button>
+</div>
+
   <!-- Reservas -->
   <section class="panel" aria-labelledby="hRes">
-    <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
-      <h2 id="hRes" style="margin:0">Reservas</h2>
-      <div class="flex flex-wrap items-end gap-3">
-        <div class="f" style="margin:0">
-          <label for="filtroFecha">Filtrar por fecha</label>
-          <input class="ctl" type="date" id="filtroFecha">
-        </div>
-        <button class="btn" type="button" id="btnTodas">Ver todas</button>
-      </div>
-    </div>
+    <h2 id="hRes">Reservas</h2>
     <div id="listaReservas" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
   </section>
 
@@ -40,7 +40,7 @@
     <div id="listaFranjas" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
 
     <details class="mt-6">
-      <summary class="font-semibold cursor-pointer" style="color:var(--wine-d)">➕ Bloquear una franja sin reservas</summary>
+      <summary class="resumen-bloqueo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Bloquear una franja sin reservas</summary>
       <form id="formBloqueo" novalidate class="mt-4 grid gap-4 sm:grid-cols-3">
         <div class="f">
           <label for="bFecha">Fecha <span class="req">*</span></label>
