@@ -490,3 +490,17 @@ body[data-page="carta-admin"] dialog{max-width:560px;max-height:94vh}
 .hrs li.hoy{background:var(--amber-s)}
 .hrs li.hoy b{color:var(--wine-d)}
 .hrs li.hoy b::after{content:"Hoy";margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--wine);color:#fff;font-size:12px;font-weight:700;vertical-align:1px}
+
+/* Transiciones: ventanas, mensajes, menús y entrada de página */
+@keyframes aparecer{from{opacity:0}}
+@keyframes entrar{from{opacity:0;transform:translateY(-8px)}}
+main{animation:aparecer .45s ease both}
+/* Ventanas: entran y salen con desvanecido + zoom suave */
+dialog{opacity:0;transform:scale(.94) translateY(10px);transition:opacity .22s ease,transform .22s ease,overlay .22s allow-discrete,display .22s allow-discrete}
+dialog[open]{opacity:1;transform:none;animation:none}
+@starting-style{dialog[open]{opacity:0;transform:scale(.94) translateY(10px)}}
+dialog::backdrop{background:rgba(25,15,8,0);transition:background .22s ease,overlay .22s allow-discrete,display .22s allow-discrete}
+dialog[open]::backdrop{background:rgba(25,15,8,.6)}
+@starting-style{dialog[open]::backdrop{background:rgba(25,15,8,0)}}
+/* Mensajes de confirmación y menús desplegables: entran deslizándose */
+.alert.ok:not([hidden]),.alert.show,.dropdown-menu:not([hidden]){animation:entrar .3s ease both}
