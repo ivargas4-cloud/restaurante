@@ -875,6 +875,7 @@ function initCartaAdmin(){
     formNuevo.reset();
     renderFiltro();
     renderLista();
+    toast('Plato ' + plato.n + ' agregado ');
   });
 
   renderFiltro();
