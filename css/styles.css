@@ -52,7 +52,7 @@ main{width:100%;max-width:1248px;margin:0 auto;padding:20px 24px 32px}
 .nav-menu{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .nav-menu > ul{list-style:none;display:flex;gap:10px;margin:0;padding:0;flex-wrap:wrap}
 @media(max-width:900px){
-  .nav-toggle{display:block}
+  .nav-toggle{display:block;margin-left:auto}
   .nav-menu{display:none;width:100%;flex-direction:column;align-items:stretch;gap:12px}
   .nav-menu.abierto{display:flex}
   .nav-menu > ul{flex-direction:column}
@@ -413,6 +413,7 @@ body[data-page="menu"] .dlg .btn{width:calc(100% - 56px);margin:0 28px}
 .nav-admin{background:linear-gradient(135deg,#3a0b11,#6b1620);box-shadow:0 10px 26px rgba(58,11,17,.35)}
 .nav-admin .brand{margin-right:0}
 .nav-admin .nav-menu{margin-left:auto}
+.nav-admin .nav-toggle{margin-left:auto}
 .badge-admin{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--amber);color:#3a2300;padding:4px 12px;border-radius:999px;margin-left:4px}
 .btn-dropdown svg{width:18px;height:18px;margin-right:8px;vertical-align:-3px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:900px){.nav-admin .nav-menu{margin-left:0}}
